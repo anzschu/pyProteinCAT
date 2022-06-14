@@ -12,8 +12,8 @@ class Student:
         Add a course name and the corresponding mark to the appropriate attributes.
         This function doesn't return anything.
         """
-        self.course = course
-        self.mark = mark
+        self.courses.append(course)
+        self.marks.append(mark)
 
     def meanMark(self) -> float:
         """
@@ -61,7 +61,7 @@ import unittest
 
 anna = Student("Anna Schuppe", ["Maths", "Python", "Science"], [8.5, 7.8, 9.1])
 eloy = Student("Eloy Vallina", ["Maths", "Python", "Geography"], [7.8, 9.6, 4.5])
-joha = Student("Johanna Zipf", [], [])
+joha = Student("Johanna", [], [])
 py101 = Course("Python", students = [anna, eloy])
 sc101 = Course("Science", students = [anna])
 
