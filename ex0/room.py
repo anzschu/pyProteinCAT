@@ -20,14 +20,14 @@ class Student:
         Return the average of a student's marks
         """
         return sum(self.marks)/len(self.marks)
-        
+
     def transcript(self) -> dict:
         """
         Return a dictionary where the keys are the course names and the values
         are the corresponding marks
         """
         return dict( zip(self.courses, self.marks) )
-        
+
 
 
 class Course:
@@ -80,6 +80,11 @@ class StudentMean(unittest.TestCase):
 class CourseMean(unittest.TestCase):
     def test0(self):
         self.assertEqual(py101.meanMark(), sum([7.8, 9.6]) / 2)
+
+class AddCourse(unittest.TestCase):
+    eloy.addCourse("Physics", 9.5)
+    def test0(self):
+        self.assertEqual(len(eloy.courses), 2)
 
 if __name__ == '__main__':
     unittest.main()
