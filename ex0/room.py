@@ -1,5 +1,8 @@
+from statistics import mean
+
+
 class Student:
-    def __init__(self, name: str, courses: list[str], marks: list[float]):
+    def __init__(self, name: str, courses: "list[str]", marks: "list[float]"):
         self.name = name
         self.courses = courses
         self.marks = marks
@@ -9,24 +12,26 @@ class Student:
         Add a course name and the corresponding mark to the appropriate attributes.
         This function doesn't return anything.
         """
-        raise NotImplementedError
+        self.course = course
+        self.mark = mark
 
     def meanMark(self) -> float:
         """
         Return the average of a student's marks
         """
-        raise NotImplementedError
-
+        return sum(self.marks)/len(self.marks)
+        
     def transcript(self) -> dict:
         """
         Return a dictionary where the keys are the course names and the values
         are the corresponding marks
         """
-        raise NotImplementedError
+        return dict( zip(self.courses, self.marks) )
+        
 
 
 class Course:
-    def __init__(self, name: str, students: list[Student] = []):
+    def __init__(self, name: str, students: "list[Student]" = []):
         self.name = name
         self.students = students
 
@@ -35,14 +40,20 @@ class Course:
         Check that the student is taking the course and add it to the course list.
         Otherwise raise the error.
         """
+        courselist = []
+        if self in student.courses:
+            courselist.append(student)
         raise RuntimeError(f"{student.name} is not taking {self.name}") # keep
 
 
     def meanMark(self) -> float:
         """
-        Calculate the avarage mark for this course over all enrolled students.
+        Calculate and return the avarage mark for this course over all enrolled students.
         """
-        raise NotImplementedError
+        listofmarks = []
+        for student in self.students:
+           listofmarks.append(student.transcript()[self.name])
+        return mean(listofmarks)
 
 
 # some tests:  don't modify ----------------------------------------------------
