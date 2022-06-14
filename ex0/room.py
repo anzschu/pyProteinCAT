@@ -61,6 +61,7 @@ import unittest
 
 anna = Student("Anna Schuppe", ["Maths", "Python", "Science"], [8.5, 7.8, 9.1])
 eloy = Student("Eloy Vallina", ["Maths", "Python", "Geography"], [7.8, 9.6, 4.5])
+joha = Student("Johanna Zipf", [], [])
 py101 = Course("Python", students = [anna, eloy])
 sc101 = Course("Science", students = [anna])
 
@@ -82,9 +83,9 @@ class CourseMean(unittest.TestCase):
         self.assertEqual(py101.meanMark(), sum([7.8, 9.6]) / 2)
 
 class AddCourse(unittest.TestCase):
-    eloy.addCourse("Physics", 9.5)
     def test0(self):
-        self.assertEqual(len(eloy.courses), 2)
+        joha.addCourse("Physics", 9.5)
+        self.assertEqual(len(joha.courses), 1)
 
 if __name__ == '__main__':
     unittest.main()
