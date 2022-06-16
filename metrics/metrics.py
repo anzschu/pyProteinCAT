@@ -1,9 +1,13 @@
+from ast import FormattedValue
+from pydoc import apropos
 import warnings
-
+import numpy as np
 from Bio.PDB import PDBParser
+from Bio.PDB.Polypeptide import PPBuilder
 from Bio.PDB.SASA import ShrakeRupley
 from Bio.PDB.Structure import Structure
 from Bio.PDB.StructureBuilder import StructureBuilder
+from Bio.SeqUtils.ProtParam import ProteinAnalysis
 from Bio.PDB.Residue import Residue, DisorderedResidue
 from Bio.PDB.Polypeptide import three_to_one, standard_aa_names
 from Bio.PDB.PDBExceptions import PDBConstructionWarning, PDBConstructionException
@@ -31,7 +35,69 @@ GLYXGLY_ASA = { # from Miller, Janin et al (1987)
     "V": 160,
 }
 
+hydrophobicityscale = { # from Biophys J. 47:61-70(1985).
+    'ALA': 0.100, 
+    'ARG':  1.910,
+    'ASN':  0.480,
+    'ASP':  0.780,
+    'CYS': -1.420,
+    'GLN':  0.950,
+    'GLU':  0.830,
+    'GLY':  0.330,
+    'HIS': -0.500,
+    'ILE': -1.130,
+    'LEU': -1.180,
+    'LYS':  1.400,
+    'MET': -1.590,
+    'PHE': -2.120,
+    'PRO':  0.730,
+    'SER':  0.520,
+    'THR':  0.070,
+    'TRP': -0.510,
+    'TYR': -0.210,
+    'VAL': -1.270,
+}
+
 class ModStructure(Structure):
+    
+    def __init__(self, id): 
+        Structure.__init__(self,id)
+        self.sequence = self.sequencer()
+        self.length = self.getlength()
+        self.mw = self.molecularweight()
+        self.aminopos = self.sequence.count('K') + self.sequence.count('R')
+        self.aminoneg = self.sequence.count('D') + self.sequence.count('E')
+        self.aminohyd = sum(self.sequence.count(value) for value in 'FLIV')
+
+    def sequencer(self):
+        ppb = PPBuilder()
+        for pp in ppb.build_peptides(self):
+            seq = pp.get_sequence()
+        return seq        
+    
+    def getlength(self):
+        '''
+        Determine
+        '''
+        return len(self.sequence)
+        
+    def molecularweight(self):
+        '''
+        determine
+        '''
+        return ProteinAnalysis(str(self.sequence)).molecular_weight()
+    
+    def aminocount(self):
+        '''
+        Count
+        '''
+        aminocount = ProteinAnalysis(str(self.sequence)).count_amino_acids()
+        aminopos = (aminocount['K'] + aminocount['R'])/self.length
+        aminoneg = (aminocount['D'] + aminocount['E'])/self.length
+        aminohyd = (aminocount['F'] + aminocount['L'] + aminocount['I'] + aminocount['V'])/self.length
+
+        return aminopos, aminoneg, aminohyd
+
     def calculate_sasa(self):
         """
         Perform SASA calculation with ShrakeRupley algorithm for the individual
@@ -48,6 +114,52 @@ class ModStructure(Structure):
         for res in self.get_residues():
             res.complexsasa = res.sasa.copy()
 
+    def netcharge(self):
+        '''
+        Calculate
+        '''
+        return self.apos - self.aneg
+
+    def netchargedensity(self):
+        '''
+        Calculate 
+        '''
+        netchargedensity = self.netcharge()/self.get_residues().monosasa
+        return netchargedensity
+
+    def dipolemoment(self):
+        '''
+        Calculate dipole moment
+        '''
+        dipolpos = np.zeros((1,3))
+        dipolneg = np.zeros((1,3))
+        dipolpos = sum(residue.center_of_mass for residue in self.get_residues() if residue.get_resname() in ['LYS', 'ARG'])
+        dipolneg = sum(residue.center_of_mass for residue in self.get_residues() if residue.get_resname() in [ 'ASP', 'GLU'])
+        dipolevector = dipolpos - dipolneg
+        dipolemoment = 4.803 * np.linalg.norm(dipolevector)
+        return dipolemoment
+
+    def truehydrophobicity(self):
+        '''
+        Calculate
+        '''
+        truehydrophobicity = 0
+        for residue in self.get_residues():
+            if residue.get_resname() in GLYXGLY_ASA:
+                sasaratio =  residue.sasa / GLYXGLY_ASA[residue.get_resname()]
+                if sasaratio > 0.25:
+                    truehydrophobicity += hydrophobicityscale[residue.get_resname()]
+        return truehydrophobicity
+    
+    def hydrophobicmoment(self):
+        '''
+        Calculate first order hydrophobic moment source
+        '''
+        hydrophobicmoment = 0
+        for residue in self.get_residues():
+            if residue.get_resname() in GLYXGLY_ASA:
+                hydrophobicmoment += (hydrophobicityscale[residue.get_resname()]* residue.sasa* (  residue.center_of_mass()- self.center_of_mass()))
+    
     def __str__(self):
         return f"ModStructure instance {self.id}"
 
@@ -113,7 +225,7 @@ class Builder(StructureBuilder):
 
 if __name__ =='__main__':
     parser = PDBParser(QUIET=1, structure_builder=Builder())
-    s = parser.get_structure("ab1", "5iy5_AB1.pdb")
+    s = parser.get_structure("S6", "1ris.pdb")
     s.calculate_sasa()
     for res in s.get_residues():
         print(res, res.is_interface())
