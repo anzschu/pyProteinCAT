@@ -35,7 +35,7 @@ GLYXGLY_ASA = { # from Miller, Janin et al (1987)
     "V": 160,
 }
 
-hydrophobicityscale = { # from Biophys J. 47:61-70(1985).
+hydrophobicityscale = { # from Guy, H.R., Biophys J. 47:61-70(1985)
     'ALA': 0.100, 
     'ARG':  1.910,
     'ASN':  0.480,
@@ -70,6 +70,9 @@ class ModStructure(Structure):
         self.aminohyd = sum(self.sequence.count(value) for value in 'FLIV')
 
     def sequencer(self):
+        '''
+        Return polypeptide sequence from peptides.
+        '''
         ppb = PPBuilder()
         for pp in ppb.build_peptides(self):
             seq = pp.get_sequence()
@@ -77,19 +80,19 @@ class ModStructure(Structure):
     
     def getlength(self):
         '''
-        Determine
+        Return length of the protein sequence.
         '''
         return len(self.sequence)
         
     def molecularweight(self):
         '''
-        determine
+        Return molecular weight of the protein sequence.
         '''
         return ProteinAnalysis(str(self.sequence)).molecular_weight()
     
     def aminocount(self):
         '''
-        Count
+        Return the amount of positive, negative and hydrophobic residues.
         '''
         aminocount = ProteinAnalysis(str(self.sequence)).count_amino_acids()
         aminopos = (aminocount['K'] + aminocount['R'])/self.length
@@ -116,20 +119,22 @@ class ModStructure(Structure):
 
     def netcharge(self):
         '''
-        Calculate
+        Return the net charge of the protein from the amount of positive and negative amino acids.
         '''
-        return self.apos - self.aneg
+        return self.aminopos - self.aminoneg
 
     def netchargedensity(self):
         '''
-        Calculate 
+        Return net charge density from net charge and total SASA of the
+        residues.
         '''
         netchargedensity = self.netcharge()/self.get_residues().monosasa
         return netchargedensity
 
     def dipolemoment(self):
         '''
-        Calculate dipole moment
+        Return dipole moment calculated from the dipole moments of the positive and negative residues.
+        Source for dipolemoment equation: Felder, Prilusky, Silman, Sussman Nucleic Acids Research 2007
         '''
         dipolpos = np.zeros((1,3))
         dipolneg = np.zeros((1,3))
@@ -141,7 +146,7 @@ class ModStructure(Structure):
 
     def truehydrophobicity(self):
         '''
-        Calculate
+        Calculate total hydrophobicity for residues that are more than 25% exposed to the surface.
         '''
         truehydrophobicity = 0
         for residue in self.get_residues():
@@ -153,12 +158,14 @@ class ModStructure(Structure):
     
     def hydrophobicmoment(self):
         '''
-        Calculate first order hydrophobic moment source
+        Calculate first order hydrophobic moment. 
+        Source for hydrophobicmoment equation: Silverman PNAS 2001, eq. 13
         '''
         hydrophobicmoment = 0
         for residue in self.get_residues():
             if residue.get_resname() in GLYXGLY_ASA:
                 hydrophobicmoment += (hydrophobicityscale[residue.get_resname()]* residue.sasa* (  residue.center_of_mass()- self.center_of_mass()))
+        return hydrophobicmoment
     
     def __str__(self):
         return f"ModStructure instance {self.id}"
