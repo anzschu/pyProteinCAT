@@ -1,9 +1,8 @@
-from ast import FormattedValue
-from pydoc import apropos
+from curses import def_prog_mode
 import warnings
 import numpy as np
 from Bio.PDB import PDBParser
-from Bio.PDB.Polypeptide import PPBuilder
+from Bio.PDB.Polypeptide import is_aa
 from Bio.PDB.SASA import ShrakeRupley
 from Bio.PDB.Structure import Structure
 from Bio.PDB.StructureBuilder import StructureBuilder
@@ -36,47 +35,55 @@ GLYXGLY_ASA = { # from Miller, Janin et al (1987)
 }
 
 hydrophobicityscale = { # from Guy, H.R., Biophys J. 47:61-70(1985)
-    'ALA': 0.100, 
-    'ARG':  1.910,
-    'ASN':  0.480,
-    'ASP':  0.780,
-    'CYS': -1.420,
-    'GLN':  0.950,
-    'GLU':  0.830,
-    'GLY':  0.330,
-    'HIS': -0.500,
-    'ILE': -1.130,
-    'LEU': -1.180,
-    'LYS':  1.400,
-    'MET': -1.590,
-    'PHE': -2.120,
-    'PRO':  0.730,
-    'SER':  0.520,
-    'THR':  0.070,
-    'TRP': -0.510,
-    'TYR': -0.210,
-    'VAL': -1.270,
+    'A': 0.100, 
+    'R':  1.910,
+    'N':  0.480,
+    'D':  0.780,
+    'C': -1.420,
+    'Q':  0.950,
+    'E':  0.830,
+    'G':  0.330,
+    'H': -0.500,
+    'I': -1.130,
+    'L': -1.180,
+    'K':  1.400,
+    'M': -1.590,
+    'F': -2.120,
+    'P':  0.730,
+    'S':  0.520,
+    'T':  0.070,
+    'W': -0.510,
+    'Y': -0.210,
+    'V': -1.270,
 }
 
 class ModStructure(Structure):
     
     def __init__(self, id): 
         Structure.__init__(self,id)
+    
+    def measure(self):
         self.sequence = self.sequencer()
         self.length = self.getlength()
-        self.mw = self.molecularweight()
-        self.aminopos = self.sequence.count('K') + self.sequence.count('R')
-        self.aminoneg = self.sequence.count('D') + self.sequence.count('E')
-        self.aminohyd = sum(self.sequence.count(value) for value in 'FLIV')
+        self.MWkDa = self.molecularweight()/1000
+        self.fPos= self.aminocount()[0]/self.length
+        self.fNeg = self.aminocount()[1]/self.length
+        self.fFatty = self.aminocount()[2]/self.length
+        self.sasa = self.calculate_sasa()
+        self.nc = self.netcharge()
+        self.ncd = self.netchargedensity()
+        self.dpm = self.dipolemoment()
+        self.guy = self.truehydrophobicity()
+        self.hpm = self.hydrophobicmoment()
 
     def sequencer(self):
         '''
         Return polypeptide sequence from peptides.
         '''
-        ppb = PPBuilder()
-        for pp in ppb.build_peptides(self):
-            seq = pp.get_sequence()
-        return seq        
+        sequence = ""
+        for residue in self.get_residues():
+            sequence += residue.resletter
+        return sequence
     
     def getlength(self):
         '''
@@ -94,10 +101,9 @@ class ModStructure(Structure):
         '''
         Return the amount of positive, negative and hydrophobic residues.
         '''
-        aminocount = ProteinAnalysis(str(self.sequence)).count_amino_acids()
-        aminopos = (aminocount['K'] + aminocount['R'])/self.length
-        aminoneg = (aminocount['D'] + aminocount['E'])/self.length
-        aminohyd = (aminocount['F'] + aminocount['L'] + aminocount['I'] + aminocount['V'])/self.length
+        aminopos = self.sequence.count('K') + self.sequence.count('R')
+        aminoneg = self.sequence.count('D') + self.sequence.count('E')
+        aminohyd = sum(self.sequence.count(value) for value in 'FLIV')
 
         return aminopos, aminoneg, aminohyd
 
@@ -110,25 +116,27 @@ class ModStructure(Structure):
         calculator = ShrakeRupley()
         for chain in self.get_chains():
             calculator.compute(chain, level="R") # calculate on the monomers
-            for res in chain.get_residues():
-                res.monosasa = res.sasa.copy()
+            for residue in chain.get_residues():
+                residue.monosasa = residue.sasa.copy()
 
         calculator.compute(self, level="R") # calculate on the complex
-        for res in self.get_residues():
-            res.complexsasa = res.sasa.copy()
+        for residue in self.get_residues():
+            residue.complexsasa = residue.sasa.copy()
+        
+        return sum(residue.monosasa for residue in self.get_residues())
 
     def netcharge(self):
         '''
         Return the net charge of the protein from the amount of positive and negative amino acids.
         '''
-        return self.aminopos - self.aminoneg
+        return self.aminocount()[0] - self.aminocount()[1]
 
     def netchargedensity(self):
         '''
         Return net charge density from net charge and total SASA of the
-        residues.
+        residues. WRONG
         '''
-        netchargedensity = self.netcharge()/self.get_residues().monosasa
+        netchargedensity = self.netcharge()/self.sasa
         return netchargedensity
 
     def dipolemoment(self):
@@ -138,8 +146,8 @@ class ModStructure(Structure):
         '''
         dipolpos = np.zeros((1,3))
         dipolneg = np.zeros((1,3))
-        dipolpos = sum(residue.center_of_mass for residue in self.get_residues() if residue.get_resname() in ['LYS', 'ARG'])
-        dipolneg = sum(residue.center_of_mass for residue in self.get_residues() if residue.get_resname() in [ 'ASP', 'GLU'])
+        dipolpos = sum(residue.center_of_mass() for residue in self.get_residues() if residue.resletter in 'KR')
+        dipolneg = sum(residue.center_of_mass() for residue in self.get_residues() if residue.resletter in 'DE')
         dipolevector = dipolpos - dipolneg
         dipolemoment = 4.803 * np.linalg.norm(dipolevector)
         return dipolemoment
@@ -150,10 +158,10 @@ class ModStructure(Structure):
         '''
         truehydrophobicity = 0
         for residue in self.get_residues():
-            if residue.get_resname() in GLYXGLY_ASA:
-                sasaratio =  residue.sasa / GLYXGLY_ASA[residue.get_resname()]
-                if sasaratio > 0.25:
-                    truehydrophobicity += hydrophobicityscale[residue.get_resname()]
+            #if residue.get_resname() in GLYXGLY_ASA:
+            sasaratio =  residue.sasa / GLYXGLY_ASA[residue.resletter]
+            if sasaratio > 0.25:
+                truehydrophobicity += hydrophobicityscale[residue.resletter]
         return truehydrophobicity
     
     def hydrophobicmoment(self):
@@ -163,8 +171,8 @@ class ModStructure(Structure):
         '''
         hydrophobicmoment = 0
         for residue in self.get_residues():
-            if residue.get_resname() in GLYXGLY_ASA:
-                hydrophobicmoment += (hydrophobicityscale[residue.get_resname()]* residue.sasa* (  residue.center_of_mass()- self.center_of_mass()))
+            #if residue.get_resname() in GLYXGLY_ASA:
+            hydrophobicmoment += (hydrophobicityscale[residue.resletter]* residue.sasa* (  residue.center_of_mass()- self.center_of_mass()))
         return hydrophobicmoment
     
     def __str__(self):
@@ -221,18 +229,19 @@ class Builder(StructureBuilder):
         self.structure = ModStructure(structure_id)         # ---> bespoke class
 
     def init_residue(self, resname, field, resseq, icode):
+        if not is_aa(resname, standard = True):
+            return
         if field != " ":
             if field == "H":
                 field = "H_" + resname
 
-        res_id = (field, resseq, icode)
-        self.residue = ModRes(res_id, resname, self.segid)  # ---> bespoke class
-        self.chain.add(self.residue)
+        residue_id = (field, resseq, icode)
+        self.residue = ModRes(residue_id, resname, self.segid)  # ---> bespoke class
+        self.chain.add(self.residue) 
 
 
 if __name__ =='__main__':
     parser = PDBParser(QUIET=1, structure_builder=Builder())
     s = parser.get_structure("S6", "1ris.pdb")
     s.calculate_sasa()
-    for res in s.get_residues():
-        print(res, res.is_interface())
+    s.measure()
