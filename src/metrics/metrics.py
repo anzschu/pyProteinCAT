@@ -1,5 +1,3 @@
-from curses import def_prog_mode
-import warnings
 import numpy as np
 from Bio.PDB import PDBParser
 from Bio.PDB.Polypeptide import is_aa
@@ -7,9 +5,8 @@ from Bio.PDB.SASA import ShrakeRupley
 from Bio.PDB.Structure import Structure
 from Bio.PDB.StructureBuilder import StructureBuilder
 from Bio.SeqUtils.ProtParam import ProteinAnalysis
-from Bio.PDB.Residue import Residue, DisorderedResidue
+from Bio.PDB.Residue import Residue
 from Bio.PDB.Polypeptide import three_to_one, standard_aa_names
-from Bio.PDB.PDBExceptions import PDBConstructionWarning, PDBConstructionException
 
 GLYXGLY_ASA = { # from Miller, Janin et al (1987)
     "A": 113,
@@ -75,6 +72,23 @@ class ModStructure(Structure):
         self.dpm = self.dipolemoment()
         self.guy = self.truehydrophobicity()
         self.hpm = self.hydrophobicmoment()
+    
+    def serializer(self):
+        measurements = {
+            #'id': (filename)
+            'length': self.length, 
+            'mwkda': self.MWkDa,
+            'fPos': self.fPos,
+            'fNeg': self.fNeg,
+            'fFatty': self.fFatty,
+            'sasa': self.sasa,
+            'nc': self.nc,
+            'ncd': self.ncd,
+            'dpm': self.dpm,
+            'guy': self.guy,
+            'hpm': self.hpm
+        }
+        return measurements
 
     def sequencer(self):
         '''
@@ -173,7 +187,7 @@ class ModStructure(Structure):
         for residue in self.get_residues():
             #if residue.get_resname() in GLYXGLY_ASA:
             hydrophobicmoment += (hydrophobicityscale[residue.resletter]* residue.sasa* (  residue.center_of_mass()- self.center_of_mass()))
-        return hydrophobicmoment
+        return np.linalg.norm(hydrophobicmoment)
     
     def __str__(self):
         return f"ModStructure instance {self.id}"
@@ -243,5 +257,6 @@ class Builder(StructureBuilder):
 if __name__ =='__main__':
     parser = PDBParser(QUIET=1, structure_builder=Builder())
     s = parser.get_structure("S6", "1ris.pdb")
-    s.calculate_sasa()
+    #s.calculate_sasa()
     s.measure()
+    print(s.serializer())
