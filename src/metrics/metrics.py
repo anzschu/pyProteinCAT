@@ -124,19 +124,14 @@ class ModStructure(Structure):
     def calculate_sasa(self):
         """
         Perform SASA calculation with ShrakeRupley algorithm for the individual
-        chains (monomers) and the whole structure (complex). Attach results to
-        residue objects as Residue.monosasa and Residue.complexsasa.
+        chains (monomers). Attach results to residue objects as Residue.monosasa.
         """
         calculator = ShrakeRupley()
         for chain in self.get_chains():
             calculator.compute(chain, level="R") # calculate on the monomers
             for residue in chain.get_residues():
                 residue.monosasa = residue.sasa.copy()
-
-        calculator.compute(self, level="R") # calculate on the complex
-        for residue in self.get_residues():
-            residue.complexsasa = residue.sasa.copy()
-        
+    
         return sum(residue.monosasa for residue in self.get_residues())
 
     def netcharge(self):
@@ -209,16 +204,6 @@ class ModRes(Residue):
             return self.monosasa / GLYXGLY_ASA[self.resletter] <= threshold
         except AttributeError:
             raise AttributeError("Attrib. monosasa not set: did you call structure.calculate_sasa()")
-
-    def is_interface(self, thresh_buried=0.25, thresh_inter=0.05):
-        """
-        Return boolean depending on ratio of residue SASA change with respect to
-        literature values in GLYXGLY_ASA and a threshold (default 0.05).
-        """
-        if self.is_buried(threshold = thresh_buried):
-            return False
-        else:
-            return (self.monosasa - self.complexsasa) / GLYXGLY_ASA[self.resletter] > thresh_inter
 
     def __str__(self):
         return f"ModRes instance {self.resname}"
