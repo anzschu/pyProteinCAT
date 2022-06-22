@@ -75,7 +75,7 @@ class ModStructure(Structure):
     
     def serializer(self):
         measurements = {
-            #'id': (filename)
+            'id': self.id,
             'length': self.length, 
             'mwkda': self.MWkDa,
             'fPos': self.fPos,
@@ -256,7 +256,7 @@ class Builder(StructureBuilder):
 
 if __name__ =='__main__':
     parser = PDBParser(QUIET=1, structure_builder=Builder())
-    s = parser.get_structure("S6", "1ris.pdb")
+    s = parser.get_structure("1ris", "data/data1/1ris.pdb")
     #s.calculate_sasa()
     s.measure()
     print(s.serializer())
