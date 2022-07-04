@@ -32,7 +32,7 @@ GLYXGLY_ASA = { # from Miller, Janin et al (1987)
 }
 
 hydrophobicityscale = { # from Guy, H.R., Biophys J. 47:61-70(1985)
-    'A': 0.100, 
+    'A': 0.100,
     'R':  1.910,
     'N':  0.480,
     'D':  0.780,
@@ -55,10 +55,10 @@ hydrophobicityscale = { # from Guy, H.R., Biophys J. 47:61-70(1985)
 }
 
 class ModStructure(Structure):
-    
-    def __init__(self, id): 
+
+    def __init__(self, id):
         Structure.__init__(self,id)
-    
+
     def measure(self):
         self.sequence = self.sequencer()
         self.length = self.getlength()
@@ -72,11 +72,11 @@ class ModStructure(Structure):
         self.dpm = self.dipolemoment()
         self.guy = self.truehydrophobicity()
         self.hpm = self.hydrophobicmoment()
-    
+
     def serializer(self):
         measurements = {
             'id': self.id,
-            'length': self.length, 
+            'length': self.length,
             'mwkda': self.MWkDa,
             'fPos': self.fPos,
             'fNeg': self.fNeg,
@@ -98,19 +98,19 @@ class ModStructure(Structure):
         for residue in self.get_residues():
             sequence += residue.resletter
         return sequence
-    
+
     def getlength(self):
         '''
         Return length of the protein sequence.
         '''
         return len(self.sequence)
-        
+
     def molecularweight(self):
         '''
         Return molecular weight of the protein sequence.
         '''
         return ProteinAnalysis(str(self.sequence)).molecular_weight()
-    
+
     def aminocount(self):
         '''
         Return the amount of positive, negative and hydrophobic residues.
@@ -131,7 +131,7 @@ class ModStructure(Structure):
             calculator.compute(chain, level="R") # calculate on the monomers
             for residue in chain.get_residues():
                 residue.monosasa = residue.sasa.copy()
-    
+
         return sum(residue.monosasa for residue in self.get_residues())
 
     def netcharge(self):
@@ -148,7 +148,7 @@ class ModStructure(Structure):
         netchargedensity = self.netcharge()/self.sasa
         return netchargedensity
 
-    def dipolemoment(self):
+    def dipolevector(self):
         '''
         Return dipole moment calculated from the dipole moments of the positive and negative residues.
         Source for dipolemoment equation: Felder, Prilusky, Silman, Sussman Nucleic Acids Research 2007
@@ -157,9 +157,10 @@ class ModStructure(Structure):
         dipolneg = np.zeros((1,3))
         dipolpos = sum(residue.center_of_mass() for residue in self.get_residues() if residue.resletter in 'KR')
         dipolneg = sum(residue.center_of_mass() for residue in self.get_residues() if residue.resletter in 'DE')
-        dipolevector = dipolpos - dipolneg
-        dipolemoment = 4.803 * np.linalg.norm(dipolevector)
-        return dipolemoment
+        return dipolpos - dipolneg
+
+    def dipolemoment(self):
+        return 4.803 * np.linalg.norm(self.dipolevector())
 
     def truehydrophobicity(self):
         '''
@@ -172,10 +173,10 @@ class ModStructure(Structure):
             if sasaratio > 0.25:
                 truehydrophobicity += hydrophobicityscale[residue.resletter]
         return truehydrophobicity
-    
+
     def hydrophobicmoment(self):
         '''
-        Calculate first order hydrophobic moment. 
+        Calculate first order hydrophobic moment.
         Source for hydrophobicmoment equation: Silverman PNAS 2001, eq. 13
         '''
         hydrophobicmoment = 0
@@ -183,7 +184,7 @@ class ModStructure(Structure):
             #if residue.get_resname() in GLYXGLY_ASA:
             hydrophobicmoment += (hydrophobicityscale[residue.resletter]* residue.sasa* (  residue.center_of_mass()- self.center_of_mass()))
         return np.linalg.norm(hydrophobicmoment)
-    
+
     def __str__(self):
         return f"ModStructure instance {self.id}"
 
@@ -236,7 +237,7 @@ class Builder(StructureBuilder):
 
         residue_id = (field, resseq, icode)
         self.residue = ModRes(residue_id, resname, self.segid)  # ---> bespoke class
-        self.chain.add(self.residue) 
+        self.chain.add(self.residue)
 
 
 if __name__ =='__main__':
