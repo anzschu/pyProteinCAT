@@ -11,14 +11,14 @@ from src.metrics import Builder
 
 
 def drawDipole(session, proteinfile):
-    vectorfile = generateDipoleFile(proteinfile)
+    vectorfile = generateVectorFile(proteinfile)
     run(session, f"open {proteinfile}")
     run(session, f"open {vectorfile}")
     # clean up
     os.remove(vectorfile)
 
 
-def generateDipoleFile(proteinfile):
+def generateVectorFile(proteinfile):
     proteinfile = Path(proteinfile)
     vectorfile = proteinfile.stem + ".bild"
     parser = PDBParser(QUIET=True, structure_builder=Builder())
@@ -27,10 +27,10 @@ def generateDipoleFile(proteinfile):
     dx, dy, dz = structure.dipolevector()
     with open(vectorfile, "w") as vector:
         body = f"""
+                .color 1 1 1
                 .sphere {cx} {cy} {cz} 2
                 .color 1 0 0
                 .arrow {cx} {cy} {cz} {dx} {dy} {dz} 1 3 0.75
-                .color 1 1 0
                 """
         vector.write(textwrap.dedent(body))
     return vectorfile
