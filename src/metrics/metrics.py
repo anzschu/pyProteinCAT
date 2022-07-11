@@ -60,6 +60,9 @@ class ModStructure(Structure):
         Structure.__init__(self,id)
     
     def measure(self):
+        '''
+        Attach measurements as attributes to structure.
+        '''
         self.sequence = self.sequencer()
         self.length = self.getlength()
         self.MWkDa = self.molecularweight()/1000
@@ -74,6 +77,9 @@ class ModStructure(Structure):
         self.hpm = self.hydrophobicmoment()
     
     def serializer(self):
+        '''
+        Return dictionary of all measurements from attributes.
+        '''
         measurements = {
             'id': self.id,
             'length': self.length, 
@@ -143,7 +149,7 @@ class ModStructure(Structure):
     def netchargedensity(self):
         '''
         Return net charge density from net charge and total SASA of the
-        residues. WRONG
+        residues.
         '''
         netchargedensity = self.netcharge()/self.sasa
         return netchargedensity
