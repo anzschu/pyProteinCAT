@@ -1,3 +1,4 @@
+from os import remove
 import numpy as np
 from Bio.PDB import PDBParser
 from Bio.PDB.Polypeptide import is_aa
@@ -230,6 +231,10 @@ class Builder(StructureBuilder):
     >>> parser = PDBParser(QUIET=1, structure_builder=Builder())
     >>> s = parser.get_structure("ab1", "5iy5_AB1.pdb")
     """
+    def __init__(self, is_AF = False):
+        self.is_AF = is_AF
+        StructureBuilder.__init__(self)
+
     def init_structure(self, structure_id):
         self.structure = ModStructure(structure_id)         # ---> bespoke class
 
@@ -242,12 +247,29 @@ class Builder(StructureBuilder):
 
         residue_id = (field, resseq, icode)
         self.residue = ModRes(residue_id, resname, self.segid)  # ---> bespoke class
-        self.chain.add(self.residue) 
-
-
+        self.chain.add(self.residue)
+    
+    def get_structure(self):
+        if self.is_AF == True:
+            position = []
+            for residue in self.structure.get_residues():
+                for atom in residue:
+                    if atom.get_bfactor() > 70:
+                        position.append(atom.get_parent().id[1])
+            removeresidues = []
+            for residue in self.structure.get_residues():
+                if residue.id[1] < position[0]:
+                    removeresidues.append(residue.id[1])
+                if residue.id[1] > position[-1]:
+                    removeresidues.append(residue.id[1])
+            print(removeresidues)
+            for residue in self.chain.get_residues():
+                if residue.id[1] in removeresidues:
+                    self.chain.detach_child(residue.id)
+        return self.structure
+    
 if __name__ =='__main__':
-    parser = PDBParser(QUIET=1, structure_builder=Builder())
-    s = parser.get_structure("1ris", "data/data1/1ris.pdb")
-    #s.calculate_sasa()
+    parser = PDBParser(QUIET=1, structure_builder=Builder(is_AF=True))
+    s = parser.get_structure("R4K3K7", "data/bacteriahalocyanin/R4K3K7.pdb")    
     s.measure()
     print(s.serializer())
