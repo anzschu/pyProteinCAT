@@ -254,7 +254,7 @@ class Builder(StructureBuilder):
             position = []
             for residue in self.structure.get_residues():
                 for atom in residue:
-                    if atom.get_bfactor() > 70:
+                    if atom.get_bfactor() > 80:
                         position.append(atom.get_parent().id[1])
             removeresidues = []
             for residue in self.structure.get_residues():
