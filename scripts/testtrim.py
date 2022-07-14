@@ -24,7 +24,7 @@ def save_pdb(fname):
     s = read_data(fname)
     io = PDBIO()
     io.set_structure(s)
-    with open(TRIM / f"{fname.stem}_trim.pdb", mode='w') as f:
+    with open(TRIM / f"{fname.stem}_trim2.pdb", mode='w') as f:
         io.save(f)
 
 def findingthreshold(fname):
@@ -42,13 +42,14 @@ def findingthreshold(fname):
     plt.xlabel("Residue")
     plt.ylabel("pLDDT")
     plt.title(f"{fname.stem}")
-    plt.savefig(TRIM/f"{fname.stem}.png", bbox_inches='tight',dpi=200)
+    plt.savefig(TRIM/f"{fname.stem}2.png", bbox_inches='tight',dpi=200)
    
 if __name__ =='__main__':
     firstten = 0
     for data in dataset.iterdir():
         firstten += 1
-        s = findingthreshold(data)
+        save_pdb(data)
+        findingthreshold(data)
         if firstten == 10:
             break
     # s.measure()
