@@ -8,14 +8,14 @@ from src.metrics import Builder
 from settings import DATA, MEASUREMENTS
 
 
-dataset = DATA / 'archaeahalocyanin'
-measurementset = MEASUREMENTS / 'archaeahalocyanin.csv'
+dataset = DATA / 'bacteriahalocyanin'
+measurementset = MEASUREMENTS / 'bacteriahalocyanintrim.csv'
 
 def read_data(fname):
     parser = PDBParser(QUIET=1, structure_builder=Builder())
     s = parser.get_structure( fname.stem , fname)
     return s
-start = datetime.now()
+#start = datetime.now()
 results = []
 for pdbfile in dataset.iterdir():
     s = read_data(pdbfile)
@@ -25,5 +25,5 @@ for pdbfile in dataset.iterdir():
 proteindata = pd.DataFrame(results)
 proteindata.to_csv( measurementset, index = False)
 
-end = datetime.now()
-print(end-start)
+#end = datetime.now()
+#print(end-start)
