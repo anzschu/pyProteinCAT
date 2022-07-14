@@ -259,13 +259,13 @@ class Builder(StructureBuilder):
             removeresidues = []
             for residue in self.structure.get_residues():
                 if residue.id[1] < position[0]:
-                    removeresidues.append(residue.id[1])
-                if residue.id[1] > position[-1]:
-                    removeresidues.append(residue.id[1])
+                    removeresidues.append(residue.id)
+                elif residue.id[1] > position[-1]:
+                    removeresidues.append(residue.id)
             print(removeresidues)
-            for residue in self.chain.get_residues():
-                if residue.id[1] in removeresidues:
-                    self.chain.detach_child(residue.id)
+            for residueid in removeresidues:
+                #print(residueid)
+                self.chain.detach_child(residueid)
         return self.structure
     
 if __name__ =='__main__':
