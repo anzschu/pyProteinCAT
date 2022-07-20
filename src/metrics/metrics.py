@@ -175,7 +175,9 @@ class ModStructure(Structure):
         return truehydrophobicity
 
     def hydrophobicvector(self):
-        'Calculate first order hydrophobic moment vector.'
+        '''
+        Calculate first order hydrophobic moment vector.
+        '''
         hydrophobicvector = 0
         for residue in self.get_residues():
             #if residue.get_resname() in GLYXGLY_ASA:
