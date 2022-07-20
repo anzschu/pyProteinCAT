@@ -174,16 +174,20 @@ class ModStructure(Structure):
                 truehydrophobicity += hydrophobicityscale[residue.resletter]
         return truehydrophobicity
 
+    def hydrophobicvector(self):
+        'Calculate first order hydrophobic moment vector.'
+        hydrophobicvector = 0
+        for residue in self.get_residues():
+            #if residue.get_resname() in GLYXGLY_ASA:
+            hydrophobicvector += (hydrophobicityscale[residue.resletter]* residue.sasa* (  residue.center_of_mass()- self.center_of_mass()))
+        return hydrophobicvector
+        
     def hydrophobicmoment(self):
         '''
         Calculate first order hydrophobic moment.
         Source for hydrophobicmoment equation: Silverman PNAS 2001, eq. 13
         '''
-        hydrophobicmoment = 0
-        for residue in self.get_residues():
-            #if residue.get_resname() in GLYXGLY_ASA:
-            hydrophobicmoment += (hydrophobicityscale[residue.resletter]* residue.sasa* (  residue.center_of_mass()- self.center_of_mass()))
-        return np.linalg.norm(hydrophobicmoment)
+        return np.linalg.norm(self.hydrophobicvector())
 
     def __str__(self):
         return f"ModStructure instance {self.id}"
