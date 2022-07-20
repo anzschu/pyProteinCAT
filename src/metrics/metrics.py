@@ -143,7 +143,7 @@ class ModStructure(Structure):
     def netchargedensity(self):
         '''
         Return net charge density from net charge and total SASA of the
-        residues. WRONG
+        residues.
         '''
         netchargedensity = self.netcharge()/self.sasa
         return netchargedensity
@@ -182,7 +182,7 @@ class ModStructure(Structure):
         for residue in self.get_residues():
             #if residue.get_resname() in GLYXGLY_ASA:
             hydrophobicvector += (hydrophobicityscale[residue.resletter]* residue.sasa* (  residue.center_of_mass()- self.center_of_mass()))
-        return hydrophobicvector
+        return (hydrophobicvector)/np.linalg.norm(hydrophobicvector)
         
     def hydrophobicmoment(self):
         '''
@@ -190,6 +190,12 @@ class ModStructure(Structure):
         Source for hydrophobicmoment equation: Silverman PNAS 2001, eq. 13
         '''
         return np.linalg.norm(self.hydrophobicvector())
+
+    def anglemeasurement(self):
+        '''
+        Calculate angle between dipolevector and hydrophobicvector
+        '''
+        return np.degrees(np.arccos((np.dot(self.dipolevector(), self.hydrophobicvector()))/(np.linalg.norm(self.dipolevector())*np.linalg.norm(self.hydrophobicvector()))))
 
     def __str__(self):
         return f"ModStructure instance {self.id}"
@@ -251,4 +257,7 @@ if __name__ =='__main__':
     s = parser.get_structure("1ris", "data/data1/1ris.pdb")
     #s.calculate_sasa()
     s.measure()
+    print(s.dipolevector())
+    print(s.hydrophobicvector())
+    print(s.anglemeasurement())
     print(s.serializer())
