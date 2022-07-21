@@ -182,7 +182,7 @@ class ModStructure(Structure):
         for residue in self.get_residues():
             #if residue.get_resname() in GLYXGLY_ASA:
             hydrophobicvector += (hydrophobicityscale[residue.resletter]* residue.sasa* (  residue.center_of_mass()- self.center_of_mass()))
-        return (hydrophobicvector)/np.linalg.norm(hydrophobicvector)
+        return (hydrophobicvector)
         
     def hydrophobicmoment(self):
         '''
