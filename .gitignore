@@ -1,8 +1,0 @@
-*.docx
-__pycache__/
-.DS_Store
-archiv/
-data/
-env/
-ex0/
-docs/build/
