@@ -2,7 +2,7 @@
 
 # Summer Project
 
-Documentation in: www.anzschu.github.io/summerproject
+Documentation in: https://anzschu.github.io/summerproject/
 
 
 # src/graphics
