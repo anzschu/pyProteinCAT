@@ -1,6 +1,8 @@
 [![unittest](https://github.com/anzschu/summerproject/actions/workflows/ci.yml/badge.svg?branch=testing&event=push)](https://github.com/anzschu/summerproject/actions/workflows/ci.yml)
 
-# summer project
+# Summer Project
+
+Documentation in: www.anzschu.github.io/summerproject
 
 
 # src/graphics
