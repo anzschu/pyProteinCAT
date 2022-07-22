@@ -1,3 +1,4 @@
+from src.metrics import Builder
 import os
 import sys
 import textwrap
@@ -12,12 +13,35 @@ from chimerax.label import label_create
 
 sys.path.append(Path(__file__).parent.parent.parent.as_posix())
 
-from src.metrics import Builder
 
 def labels(session, proteinfile):
-    label_create(session, name = 'hv', text = 'hydrophobic vector', color = (255, 140, 0, 255), xpos = 0.5, ypos = 0.9, size = 21)
-    label_create(session, name = 'dv', text = 'dipole vector', color = (0, 0, 255,255), xpos = 0.1, ypos = 0.9, size = 21)
-    label_create(session, name = proteinfile.stem, text = proteinfile.stem, xpos = 0.45, ypos = 0.1, size = 21)
+    label_create(
+        session,
+        name='hv',
+        text='hydrophobic vector',
+        color=(255, 140, 0, 255),
+        xpos=0.5,
+        ypos=0.9,
+        size=21
+    )
+    label_create(
+        session,
+        name='dv',
+        text='dipole vector',
+        color=(0, 0, 255, 255),
+        xpos=0.1,
+        ypos=0.9,
+        size=21
+    )
+    label_create(
+        session,
+        name=proteinfile.stem,
+        text=proteinfile.stem,
+        xpos=0.45,
+        ypos=0.1,
+        size=21
+    )
+
 
 def angles(session, proteinfile: Path):
     '''
@@ -28,9 +52,9 @@ def angles(session, proteinfile: Path):
     '''
     c, d, h = createcoordinates(proteinfile)
     marker_set = MarkerSet(session, name="markersforangle")
-    marker5 = marker_set.create_marker(c+d, (0, 0, 255, 255), 0.5)
+    marker5 = marker_set.create_marker(c + d, (0, 0, 255, 255), 0.5)
     marker6 = marker_set.create_marker(c, (255, 255, 255, 255), 0.5)
-    marker7 = marker_set.create_marker(c+h, (255, 140, 0, 255), 0.5)
+    marker7 = marker_set.create_marker(c + h, (255, 140, 0, 255), 0.5)
     session.models.add([marker_set])
     run(session, f"select add #4")
     anglemaker = StructMeasureTool(session)
@@ -47,6 +71,7 @@ def drawDipole(session, proteinfile: Path):
 def drawHydrophobe(session, proteinfile: Path):
     hvectorfile = generateVectorFile(proteinfile)[1]
     run(session, f"open {hvectorfile}")
+    # clean up
     os.remove(hvectorfile)
 
 
@@ -55,7 +80,6 @@ def drawProtein(session, proteinfile: Path):
 
 
 def generateVectorFile(proteinfile: Path):
-    structure = generateStructure(proteinfile)
     com, dpv, hpv = createcoordinates(proteinfile)
     cx, cy, cz = com
     dx, dy, dz = com + dpv
@@ -86,7 +110,7 @@ def createcoordinates(proteinfile: Path):
     structure.measure()
     c = structure.center_of_mass()
     d = structure.dipolevector()
-    h = structure.hydrophobicvector()/200
+    h = structure.hydrophobicvector() / 200
     return c, d, h
 
 
@@ -99,23 +123,21 @@ def generateStructure(proteinfile: Path):
 
 def drawArc(session, proteinfile):
     com, dpv, hpv = createcoordinates(proteinfile)
-    dx, dy, dz = com + dpv/np.linalg.norm(dpv) * 10
-    hx, hy, hz = com + hpv/np.linalg.norm(hpv) * 10
-    bisect = 2 * com + dpv + hpv
-    bisect = bisect / np.linalg.norm(bisect)
-    bx, by, bz = bisect
+    dx, dy, dz = com + dpv / np.linalg.norm(dpv) * 10
+    hx, hy, hz = com + hpv / np.linalg.norm(hpv) * 10
     body = f"""
             .color 0 0.5 0.5
             .transparency 1
             .dot {dx} {dy} {dz}
             .transparency 0
-            .draw {dx+bx} {dy+by} {dz+bz}
             .draw {hz} {hy} {hz}
             """
     with open(f'{proteinfile.stem}_arc.bild', "w") as arcfile:
         arcfile.write(textwrap.dedent(body))
 
     run(session, f"open {proteinfile.stem}_arc.bild")
+    # clean up
+    os.remove(f'{proteinfile.stem}_arc.bild')
 
 
 def main(proteinfile):
@@ -126,6 +148,7 @@ def main(proteinfile):
     angles(session, proteinfile)
     drawArc(session, proteinfile)
     labels(session, proteinfile)
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument("proteinfile", help="pass filename to script")
