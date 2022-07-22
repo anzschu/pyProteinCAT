@@ -5,9 +5,8 @@ import argparse
 from pathlib import Path
 from Bio.PDB import PDBParser
 from chimerax.core.commands import run
-from chimerax.markers import MarkerSet, selected_markers
+from chimerax.markers import MarkerSet
 from chimerax.struct_measure.tool import StructMeasureTool
-#from chimerax.atomic import selected_atoms
 
 sys.path.append(Path(__file__).parent.parent.parent.as_posix())
 
@@ -49,7 +48,7 @@ def generateVectorFile(proteinfile: Path):
     coordinates = createcoordinates(proteinfile)
     cx, cy, cz = coordinates[0]
     dx, dy, dz = coordinates[1]
-    hx, hy, hz = coordinates[2]
+    hx, hy, hz = coordinates[2]/200
     dvectorfile = proteinfile.stem + f"{'dipole'}"+ ".bild"
     hvectorfile = proteinfile.stem + f"{'hydrophobe'}" + ".bild"
     with open(dvectorfile, "w") as vector:
