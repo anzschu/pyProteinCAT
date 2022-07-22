@@ -7,10 +7,14 @@ from Bio.PDB import PDBParser
 from chimerax.core.commands import run
 from chimerax.markers import MarkerSet
 from chimerax.struct_measure.tool import StructMeasureTool
+from chimerax.label import label_create
 
 sys.path.append(Path(__file__).parent.parent.parent.as_posix())
 
 from src.metrics import Builder
+def labels(session):
+    label_create(session, name = 'hv',text = 'hydrophobic vector', color = (255, 140, 0, 255), xpos = 0.5, ypos= 0.9, size = 21)
+    label_create(session, name = 'dv', text = 'dipole vector', color = (0, 0, 255,255), xpos= 0.1, ypos= 0.9, size = 21)
 
 def angles(session, proteinfile: Path):
     '''
@@ -88,6 +92,7 @@ def main(proteinfile):
     drawDipole(session, proteinfile)
     drawHydrophobe(session, proteinfile)
     angles(session, proteinfile)
+    labels(session)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("proteinfile", help="pass filename to script")
