@@ -1,14 +1,15 @@
 API
 ===
 
-src.metrics package
-===================
+Metrics package
+===============
 
 Modules
 -------
 
-src.metrics.metrics module
---------------------------
+src.metrics.metrics
+-------------------
+
 .. toctree::
 
     src.metrics.metrics
