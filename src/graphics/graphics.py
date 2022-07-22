@@ -2,12 +2,12 @@ import os
 import sys
 import textwrap
 import argparse
+import numpy as np
 from pathlib import Path
 from Bio.PDB import PDBParser
 from chimerax.core.commands import run
-from chimerax.markers import MarkerSet, selected_markers
+from chimerax.markers import MarkerSet
 from chimerax.struct_measure.tool import StructMeasureTool
-#from chimerax.atomic import selected_atoms
 
 sys.path.append(Path(__file__).parent.parent.parent.as_posix())
 
@@ -15,42 +15,46 @@ from src.metrics import Builder
 
 def angles(session, proteinfile: Path):
     '''
-    Defines markers for the center of mass and the tip of the hydrophobic and dipole vector. Calculates the angle
-    between the both vectors and displays this.
-    Source for marker set: https://rbvi.github.io/chimerax-recipes/mark_blobs/mark_blobs.html
+    Defines markers for the center of mass and the tip of the hydrophobic and
+    dipole vector. Calculates the angle between the both vectors and displays
+    this. Source for marker set:
+    https://rbvi.github.io/chimerax-recipes/mark_blobs/mark_blobs.html
     '''
     c, d, h = createcoordinates(proteinfile)
-    marker_set = MarkerSet(session, name = "markersforangle")
-    marker5 = marker_set.create_marker(d, (0, 0, 255,255), 0.5)
-    marker6 = marker_set.create_marker(c, (255, 255, 255,255), 0.5)
-    marker7 = marker_set.create_marker(h, (255, 140, 0, 255), 0.5)
+    marker_set = MarkerSet(session, name="markersforangle")
+    marker5 = marker_set.create_marker(c+d, (0, 0, 255, 255), 0.5)
+    marker6 = marker_set.create_marker(c, (255, 255, 255, 255), 0.5)
+    marker7 = marker_set.create_marker(c+h, (255, 140, 0, 255), 0.5)
     session.models.add([marker_set])
     run(session, f"select add #4")
     anglemaker = StructMeasureTool(session)
-    #anglemaker._angle_text("markersforangle")
     anglemaker._create_angle()
-    
+
+
 def drawDipole(session, proteinfile: Path):
     dvectorfile = generateVectorFile(proteinfile)[0]
     run(session, f"open {dvectorfile}")
     # clean up
     os.remove(dvectorfile)
 
+
 def drawHydrophobe(session, proteinfile: Path):
     hvectorfile = generateVectorFile(proteinfile)[1]
     run(session, f"open {hvectorfile}")
     os.remove(hvectorfile)
 
+
 def drawProtein(session, proteinfile: Path):
     run(session, f"open {proteinfile}")
 
+
 def generateVectorFile(proteinfile: Path):
     structure = generateStructure(proteinfile)
-    coordinates = createcoordinates(proteinfile)
-    cx, cy, cz = coordinates[0]
-    dx, dy, dz = coordinates[1]
-    hx, hy, hz = coordinates[2]
-    dvectorfile = proteinfile.stem + f"{'dipole'}"+ ".bild"
+    com, dpv, hpv = createcoordinates(proteinfile)
+    cx, cy, cz = com
+    dx, dy, dz = com + dpv
+    hx, hy, hz = com + hpv
+    dvectorfile = proteinfile.stem + f"{'dipole'}" + ".bild"
     hvectorfile = proteinfile.stem + f"{'hydrophobe'}" + ".bild"
     with open(dvectorfile, "w") as vector:
         body = f"""
@@ -70,25 +74,51 @@ def generateVectorFile(proteinfile: Path):
         vector.write(textwrap.dedent(body))
     return dvectorfile, hvectorfile
 
+
 def createcoordinates(proteinfile: Path):
     structure = generateStructure(proteinfile)
     structure.measure()
     c = structure.center_of_mass()
     d = structure.dipolevector()
-    h = structure.hydrophobicvector()
+    h = structure.hydrophobicvector()/200
     return c, d, h
+
 
 def generateStructure(proteinfile: Path):
     parser = PDBParser(QUIET=True, structure_builder=Builder())
     structure = parser.get_structure(proteinfile.stem, proteinfile)
+    structure.measure()
     return structure
-    
+
+
+def drawArc(session, proteinfile):
+    com, dpv, hpv = createcoordinates(proteinfile)
+    dx, dy, dz = com + dpv/np.linalg.norm(dpv) * 10
+    hx, hy, hz = com + hpv/np.linalg.norm(hpv) * 10
+    bisect = 2 * com + dpv + hpv
+    bisect = bisect / np.linalg.norm(bisect)
+    bx, by, bz = bisect
+    body = f"""
+            .color 0 0.5 0.5
+            .transparency 1
+            .dot {dx} {dy} {dz}
+            .transparency 0
+            .draw {dx+bx} {dy+by} {dz+bz}
+            .draw {hz} {hy} {hz}
+            """
+    with open(f'{proteinfile.stem}_arc.bild', "w") as arcfile:
+        arcfile.write(textwrap.dedent(body))
+
+    run(session, f"open {proteinfile.stem}_arc.bild")
+
+
 def main(proteinfile):
     proteinfile = Path(proteinfile)
-    drawProtein(session,proteinfile)
+    drawProtein(session, proteinfile)
     drawDipole(session, proteinfile)
     drawHydrophobe(session, proteinfile)
     angles(session, proteinfile)
+    drawArc(session, proteinfile)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("proteinfile", help="pass filename to script")
