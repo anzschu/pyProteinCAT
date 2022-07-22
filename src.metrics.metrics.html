@@ -37,9 +37,9 @@
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Source code</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="api.html#src-metrics-package">src.metrics package</a><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="api.html#metrics-package">Metrics package</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="api.html#modules">Modules</a></li>
-<li class="toctree-l2 current"><a class="reference internal" href="api.html#src-metrics-metrics-module">src.metrics.metrics module</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="api.html#src-metrics-metrics">src.metrics.metrics</a><ul class="current">
 <li class="toctree-l3 current"><a class="current reference internal" href="#">metrics.py</a></li>
 </ul>
 </li>
@@ -72,8 +72,153 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="metrics-py">
-<h1>metrics.py<a class="headerlink" href="#metrics-py" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-src.metrics.metrics">
+<span id="metrics-py"></span><h1>metrics.py<a class="headerlink" href="#module-src.metrics.metrics" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="src.metrics.metrics.Builder">
+<em class="property">class </em><code class="sig-prename descclassname">src.metrics.metrics.</code><code class="sig-name descname">Builder</code><a class="headerlink" href="#src.metrics.metrics.Builder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Bio.PDB.StructureBuilder.StructureBuilder</span></code></p>
+<p>Subclassing of Bio.PDB.StructureBuilder.StructureBuilder to
+incorporate metrics.ModRes and metrics.ModStructure into the
+Bio.PDB hierarchy.</p>
+<p>Usage:
+Pass a Builder instance to the PDBParser as a structure_builder parameter.</p>
+<p>Example:
+&gt;&gt;&gt; parser = PDBParser(QUIET=1, structure_builder=Builder())
+&gt;&gt;&gt; s = parser.get_structure(“code”, “1ris.pdb”)</p>
+<dl class="method">
+<dt id="src.metrics.metrics.Builder.init_residue">
+<code class="sig-name descname">init_residue</code><span class="sig-paren">(</span><em class="sig-param">resname</em>, <em class="sig-param">field</em>, <em class="sig-param">resseq</em>, <em class="sig-param">icode</em><span class="sig-paren">)</span><a class="headerlink" href="#src.metrics.metrics.Builder.init_residue" title="Permalink to this definition">¶</a></dt>
+<dd><p>Instantiate residue as src.metrics.metrics.ModRes object. Overrides
+Bio.PDB.StructureBuilder.init_residue.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="src.metrics.metrics.Builder.init_structure">
+<code class="sig-name descname">init_structure</code><span class="sig-paren">(</span><em class="sig-param">structure_id</em><span class="sig-paren">)</span><a class="headerlink" href="#src.metrics.metrics.Builder.init_structure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Instantiate structure object as a metrics.ModStructure object. Overrides
+Bio.PDB.StructureBuilder.init_structure.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="src.metrics.metrics.ModRes">
+<em class="property">class </em><code class="sig-prename descclassname">src.metrics.metrics.</code><code class="sig-name descname">ModRes</code><span class="sig-paren">(</span><em class="sig-param">id</em>, <em class="sig-param">resname</em>, <em class="sig-param">segid</em><span class="sig-paren">)</span><a class="headerlink" href="#src.metrics.metrics.ModRes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Bio.PDB.Residue.Residue</span></code></p>
+<dl class="method">
+<dt id="src.metrics.metrics.ModRes.is_buried">
+<code class="sig-name descname">is_buried</code><span class="sig-paren">(</span><em class="sig-param">threshold=0.25</em><span class="sig-paren">)</span><a class="headerlink" href="#src.metrics.metrics.ModRes.is_buried" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return boolean depending on ratio of residue SASA with respect to
+literature values in GLYXGLY_ASA.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>threshold</strong> (<em>float</em>) – ratio (0, 1) of residue’s SASA over reference
+Gly-X-Gly polymer value.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>AttributeError</strong> – if the ModRes.monosara attribute is not set;
+if ModStructure.calculate_sasa didn’t run.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="src.metrics.metrics.ModStructure">
+<em class="property">class </em><code class="sig-prename descclassname">src.metrics.metrics.</code><code class="sig-name descname">ModStructure</code><span class="sig-paren">(</span><em class="sig-param">id</em><span class="sig-paren">)</span><a class="headerlink" href="#src.metrics.metrics.ModStructure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Bio.PDB.Structure.Structure</span></code></p>
+<p>Subclass of Bio.PDB.Structure containing new methods and attributes for the
+estimation of protein physichochemical properties from their PDB
+coordinates.</p>
+<dl class="method">
+<dt id="src.metrics.metrics.ModStructure.aminocount">
+<code class="sig-name descname">aminocount</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.metrics.metrics.ModStructure.aminocount" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the amount of positive, negative and hydrophobic residues.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="src.metrics.metrics.ModStructure.calculate_sasa">
+<code class="sig-name descname">calculate_sasa</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.metrics.metrics.ModStructure.calculate_sasa" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform SASA calculation with ShrakeRupley algorithm for the individual
+chains (monomers). Attach results to residue objects as Residue.monosasa.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="src.metrics.metrics.ModStructure.dipolemoment">
+<code class="sig-name descname">dipolemoment</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.metrics.metrics.ModStructure.dipolemoment" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="src.metrics.metrics.ModStructure.dipolevector">
+<code class="sig-name descname">dipolevector</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.metrics.metrics.ModStructure.dipolevector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return dipole moment calculated from the dipole moments of the positive and negative residues.
+Source for dipolemoment equation: Felder, Prilusky, Silman, Sussman Nucleic Acids Research 2007</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="src.metrics.metrics.ModStructure.getlength">
+<code class="sig-name descname">getlength</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.metrics.metrics.ModStructure.getlength" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return length of the protein sequence.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="src.metrics.metrics.ModStructure.hydrophobicmoment">
+<code class="sig-name descname">hydrophobicmoment</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.metrics.metrics.ModStructure.hydrophobicmoment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate first order hydrophobic moment.
+Source for hydrophobicmoment equation: Silverman PNAS 2001, eq. 13</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="src.metrics.metrics.ModStructure.measure">
+<code class="sig-name descname">measure</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.metrics.metrics.ModStructure.measure" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="src.metrics.metrics.ModStructure.molecularweight">
+<code class="sig-name descname">molecularweight</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.metrics.metrics.ModStructure.molecularweight" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return molecular weight of the protein sequence.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="src.metrics.metrics.ModStructure.netcharge">
+<code class="sig-name descname">netcharge</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.metrics.metrics.ModStructure.netcharge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the net charge of the protein from the amount of positive and negative amino acids.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="src.metrics.metrics.ModStructure.netchargedensity">
+<code class="sig-name descname">netchargedensity</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.metrics.metrics.ModStructure.netchargedensity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return net charge density from net charge and total SASA of the
+residues. WRONG</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="src.metrics.metrics.ModStructure.sequencer">
+<code class="sig-name descname">sequencer</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.metrics.metrics.ModStructure.sequencer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return polypeptide sequence from peptides.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="src.metrics.metrics.ModStructure.serializer">
+<code class="sig-name descname">serializer</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.metrics.metrics.ModStructure.serializer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dictionary representing the structure’s physicochemical
+properties.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="src.metrics.metrics.ModStructure.truehydrophobicity">
+<code class="sig-name descname">truehydrophobicity</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.metrics.metrics.ModStructure.truehydrophobicity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate total hydrophobicity for residues that are more than 25%
+exposed to the surface.</p>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 
 
