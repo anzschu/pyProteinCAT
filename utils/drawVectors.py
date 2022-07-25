@@ -1,7 +1,9 @@
 '''
-Visualizes dipole and hydrophobic vectors with respect to the protein's structure.
+Represent dipole and hydrophobicity vectors over a protein's structure. Opens
+a ChimeraX GUI.
 
-Example: 
+Usage:
+
     $ chimera --script "drawVectors.py 1abc.pdb"
 
 '''
@@ -53,6 +55,7 @@ def labels(session, proteinfile):
         size=21
     )
 
+
 def drawArc(session, proteinfile):
     '''
     Draws arc between both vectors.
@@ -74,10 +77,11 @@ def drawArc(session, proteinfile):
     # clean up
     os.remove(f'{proteinfile.stem}_arc.bild')
 
+
 def angles(session, proteinfile: Path):
     '''
     Defines markers for the center of mass and the tip of the hydrophobic and
-    dipole vector. Calculates the angle between the both vectors. Source for marker set:
+    dipole vector. Calculates the angle between the both vectors. Based on:
     https://rbvi.github.io/chimerax-recipes/mark_blobs/mark_blobs.html
     '''
     c, d, h = createcoordinates(proteinfile)
@@ -90,6 +94,7 @@ def angles(session, proteinfile: Path):
     anglemaker = StructMeasureTool(session)
     anglemaker._create_angle()
 
+
 def drawDipole(session, proteinfile: Path):
     '''
     Creates dipole vector in ChimeraX session.
@@ -98,6 +103,7 @@ def drawDipole(session, proteinfile: Path):
     run(session, f"open {dvectorfile}")
     # clean up
     os.remove(dvectorfile)
+
 
 def drawHydrophobe(session, proteinfile: Path):
     '''
@@ -108,11 +114,13 @@ def drawHydrophobe(session, proteinfile: Path):
     # clean up
     os.remove(hvectorfile)
 
+
 def drawProtein(session, proteinfile: Path):
     '''
     Displays protein structure in ChimeraX session.
     '''
     run(session, f"open {proteinfile}")
+
 
 def generateVectorFile(proteinfile: Path):
     '''
@@ -142,9 +150,11 @@ def generateVectorFile(proteinfile: Path):
         vector.write(textwrap.dedent(body))
     return dvectorfile, hvectorfile
 
+
 def createcoordinates(proteinfile: Path):
     '''
-    Creates coordinates for the center of mass, the dipole vector and the hydrophobic vector.
+    Creates coordinates for the center of mass, the dipole vector and th
+    hydrophobic vector.
     '''
     structure = generateStructure(proteinfile)
     structure.measure()
@@ -152,6 +162,7 @@ def createcoordinates(proteinfile: Path):
     d = structure.dipolevector()
     h = structure.hydrophobicvector() / 200
     return c, d, h
+
 
 def generateStructure(proteinfile: Path):
     '''
@@ -162,9 +173,12 @@ def generateStructure(proteinfile: Path):
     structure.measure()
     return structure
 
+
 def main(proteinfile):
     '''
-    Reads protein file to create structure. Visualizes protein structure, dipole vector and hydrophobic vector in Chimera X.
+    Reads protein file to create structure.
+    Visualizes protein structure, dipole vector and hydrophobic vector in
+    Chimera X.
     '''
     proteinfile = Path(proteinfile)
     drawProtein(session, proteinfile)
@@ -173,6 +187,7 @@ def main(proteinfile):
     angles(session, proteinfile)
     drawArc(session, proteinfile)
     labels(session, proteinfile)
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument("proteinfile", help="A protein structure in pdb format.")
