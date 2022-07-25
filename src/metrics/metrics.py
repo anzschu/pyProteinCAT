@@ -174,11 +174,10 @@ class ModStructure(Structure):
         '''
         truehydrophobicity = 0
         for residue in self.get_residues():
-            #if residue.get_resname() in GLYXGLY_ASA:
             sasaratio =  residue.sasa / GLYXGLY_ASA[residue.resletter]
             if sasaratio > 0.25:
                 truehydrophobicity += hydrophobicityscale[residue.resletter]
-        return truehydrophobicity
+        return truehydrophobicity/self.sasa
     
     def hydrophobicmoment(self):
         '''
@@ -187,7 +186,6 @@ class ModStructure(Structure):
         '''
         hydrophobicmoment = 0
         for residue in self.get_residues():
-            #if residue.get_resname() in GLYXGLY_ASA:
             hydrophobicmoment += (hydrophobicityscale[residue.resletter]* residue.sasa* (  residue.center_of_mass()- self.center_of_mass()))
         return np.linalg.norm(hydrophobicmoment)
     
@@ -270,6 +268,6 @@ class Builder(StructureBuilder):
     
 if __name__ =='__main__':
     parser = PDBParser(QUIET=1, structure_builder=Builder(is_AF=True))
-    s = parser.get_structure("R4K3K7", "data/bacteriahalocyanin/R4K3K7.pdb")    
+    s = parser.get_structure("A0A133VM87", "data/archaeahalocyanin/A0A133VM87.pdb")    
     s.measure()
     print(s.serializer())
