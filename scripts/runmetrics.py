@@ -18,6 +18,7 @@ def read_data(fname):
 #start = datetime.now()
 results = []
 for pdbfile in dataset.iterdir():
+    #print(pdbfile)
     s = read_data(pdbfile)
     s.measure()
     results.append(s.serializer())
