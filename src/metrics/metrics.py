@@ -174,9 +174,8 @@ class ModStructure(Structure):
         '''
         truehydrophobicity = 0
         for residue in self.get_residues():
-            sasaratio =  residue.sasa / GLYXGLY_ASA[residue.resletter]
-            if sasaratio > 0.25:
-                truehydrophobicity += hydrophobicityscale[residue.resletter]
+            if not residue.is_buried():
+                truehydrophobicity += hydrophobicityscale[residue.resletter] * residue.sasa
         return truehydrophobicity/self.sasa
     
     def hydrophobicmoment(self):
