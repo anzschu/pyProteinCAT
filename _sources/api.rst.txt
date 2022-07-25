@@ -4,26 +4,15 @@ API
 Metrics package
 ---------------
 
-    Modules
-    -------
+    .. toctree::
 
-        Metrics
-        -------------------
-
-        .. toctree::
-
-            src.metrics.metrics
+        src.metrics.metrics
 
 
-Graphics package
+Utils
 ----------------
 
-    Modules
-    -------
+    .. toctree::
 
-        Graphics
-        --------
-
-        .. toctree::
-
-            src.graphics.graphics
+        drawVectors
+        runMetrics
