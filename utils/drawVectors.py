@@ -95,24 +95,14 @@ def angles(session, proteinfile: Path):
     anglemaker._create_angle()
 
 
-def drawDipole(session, proteinfile: Path):
-    '''
-    Creates dipole vector in ChimeraX session.
-    '''
-    dvectorfile = generateVectorFile(proteinfile)[0]
-    run(session, f"open {dvectorfile}")
-    # clean up
-    os.remove(dvectorfile)
-
-
-def drawHydrophobe(session, proteinfile: Path):
-    '''
-    Creates hydrophobic vector in ChimeraX session.
-    '''
-    hvectorfile = generateVectorFile(proteinfile)[1]
-    run(session, f"open {hvectorfile}")
-    # clean up
-    os.remove(hvectorfile)
+def drawVectors(session, *vectorfiles):
+    """
+    Consume as many files as fed.
+    """
+    for vfile in vectorfiles:
+        run(session, f"open {vfile}")
+        # clean up
+        os.remove(vfile)
 
 
 def drawProtein(session, proteinfile: Path):
@@ -148,6 +138,7 @@ def generateVectorFile(proteinfile: Path):
                 .arrow {cx} {cy} {cz} {hx} {hy} {hz} 1 3 0.75
                 """
         vector.write(textwrap.dedent(body))
+
     return dvectorfile, hvectorfile
 
 
@@ -157,7 +148,6 @@ def createcoordinates(proteinfile: Path):
     hydrophobic vector.
     '''
     structure = generateStructure(proteinfile)
-    structure.measure()
     c = structure.center_of_mass()
     d = structure.dipolevector()
     h = structure.hydrophobicvector() / 200
@@ -174,7 +164,7 @@ def generateStructure(proteinfile: Path):
     return structure
 
 
-def main(proteinfile):
+def main(proteinfile: str):
     '''
     Reads protein file to create structure.
     Visualizes protein structure, dipole vector and hydrophobic vector in
@@ -182,8 +172,8 @@ def main(proteinfile):
     '''
     proteinfile = Path(proteinfile)
     drawProtein(session, proteinfile)
-    drawDipole(session, proteinfile)
-    drawHydrophobe(session, proteinfile)
+    dvectorfile, hvectorfile = generateVectorFile(proteinfile)
+    drawVectors(session, dvectorfile, hvectorfile)
     angles(session, proteinfile)
     drawArc(session, proteinfile)
     labels(session, proteinfile)
