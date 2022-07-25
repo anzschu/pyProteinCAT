@@ -1,4 +1,3 @@
-from src.metrics import Builder
 import os
 import sys
 import textwrap
@@ -12,6 +11,8 @@ from chimerax.struct_measure.tool import StructMeasureTool
 from chimerax.label import label_create
 
 sys.path.append(Path(__file__).parent.parent.parent.as_posix())
+
+from src.metrics import Builder  # noqa
 
 
 def labels(session, proteinfile):
@@ -52,11 +53,11 @@ def angles(session, proteinfile: Path):
     '''
     c, d, h = createcoordinates(proteinfile)
     marker_set = MarkerSet(session, name="markersforangle")
-    marker5 = marker_set.create_marker(c + d, (0, 0, 255, 255), 0.5)
-    marker6 = marker_set.create_marker(c, (255, 255, 255, 255), 0.5)
-    marker7 = marker_set.create_marker(c + h, (255, 140, 0, 255), 0.5)
+    marker_set.create_marker(c + d, (0, 0, 255, 255), 0.5)
+    marker_set.create_marker(c, (255, 255, 255, 255), 0.5)
+    marker_set.create_marker(c + h, (255, 140, 0, 255), 0.5)
     session.models.add([marker_set])
-    run(session, f"select add #4")
+    run(session, "select add #4")
     anglemaker = StructMeasureTool(session)
     anglemaker._create_angle()
 
@@ -130,7 +131,7 @@ def drawArc(session, proteinfile):
             .transparency 1
             .dot {dx} {dy} {dz}
             .transparency 0
-            .draw {hz} {hy} {hz}
+            .draw {hx} {hy} {hz}
             """
     with open(f'{proteinfile.stem}_arc.bild', "w") as arcfile:
         arcfile.write(textwrap.dedent(body))
