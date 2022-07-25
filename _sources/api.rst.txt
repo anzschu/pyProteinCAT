@@ -2,14 +2,28 @@ API
 ===
 
 Metrics package
-===============
+---------------
 
-Modules
--------
+    Modules
+    -------
 
-src.metrics.metrics
--------------------
+        Metrics
+        -------------------
 
-.. toctree::
+        .. toctree::
 
-    src.metrics.metrics
+            src.metrics.metrics
+
+
+Graphics package
+----------------
+
+    Modules
+    -------
+
+        Graphics
+        --------
+
+        .. toctree::
+
+            src.graphics.graphics
