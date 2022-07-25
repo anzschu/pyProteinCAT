@@ -153,7 +153,7 @@ class ModStructure(Structure):
     def netchargedensity(self):
         '''
         Return net charge density from net charge and total SASA of the
-        residues. WRONG
+        residues.
         '''
         netchargedensity = self.netcharge() / self.sasa
         return netchargedensity
@@ -163,12 +163,15 @@ class ModStructure(Structure):
         Return dipole moment calculated from the dipole moments of the positive and negative residues.
         Source for dipolemoment equation: Felder, Prilusky, Silman, Sussman Nucleic Acids Research 2007
         '''
-        dipolpos = np.zeros((1, 3))
-        dipolneg = np.zeros((1, 3))
-        dipolpos = sum(residue.center_of_mass()
-                       for residue in self.get_residues() if residue.resletter in 'KR')
-        dipolneg = sum(residue.center_of_mass()
-                       for residue in self.get_residues() if residue.resletter in 'DE')
+        dipolpos = sum(
+            residue.center_of_mass()
+            for residue in self.get_residues() if residue.resletter in 'KR'
+        )
+        dipolneg = sum(
+            residue.center_of_mass()
+            for residue in self.get_residues() if residue.resletter in 'DE'
+        )
+
         return dipolpos - dipolneg
 
     def dipolemoment(self):
@@ -187,17 +190,34 @@ class ModStructure(Structure):
                 truehydrophobicity += hydrophobicityscale[residue.resletter]
         return truehydrophobicity
 
+    def hydrophobicvector(self):
+        '''
+        Calculate first order hydrophobic moment vector.
+        '''
+        hydrophobicvector = 0
+        for residue in self.get_residues():
+            #if residue.get_resname() in GLYXGLY_ASA:
+            hydrophobicvector += (
+                hydrophobicityscale[residue.resletter] * residue.sasa * (
+                      residue.center_of_mass() - self.center_of_mass()))
+        return hydrophobicvector
+        
     def hydrophobicmoment(self):
         '''
         Calculate first order hydrophobic moment.
         Source for hydrophobicmoment equation: Silverman PNAS 2001, eq. 13
         '''
-        hydrophobicmoment = 0
-        for residue in self.get_residues():
-            # if residue.get_resname() in GLYXGLY_ASA:
-            hydrophobicmoment += hydrophobicityscale[residue.resletter] * residue.sasa * (residue.center_of_mass() - self.center_of_mass())
+        return np.linalg.norm(self.hydrophobicvector())
 
-        return np.linalg.norm(hydrophobicmoment)
+    @classmethod
+    def anglemeasurement(cls, v, u):
+        '''
+        Calculate angle between any two vectors v and u, in degrees.
+        '''
+        return np.degrees(np.arccos(
+            (np.dot(v, u))/
+            (np.linalg.norm(v)*np.linalg.norm(u))
+        ))
 
     def __str__(self):
         return f"ModStructure instance {self.id}"
@@ -284,4 +304,8 @@ if __name__ == '__main__':
     s = parser.get_structure("1ris", "data/data1/1ris.pdb")
     # s.calculate_sasa()
     s.measure()
+    com = s.center_of_mass()
+    dpv = s.dipolevector()
+    hpv = s.hydrophobicvector()
+    print(s.anglemeasurement(dpv - com, hpv - com))
     print(s.serializer())
