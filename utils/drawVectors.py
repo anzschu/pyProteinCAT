@@ -1,3 +1,10 @@
+'''
+Visualizes dipole and hydrophobic vectors with respect to the protein's structure.
+
+Example: 
+    $ chimera --script "drawVectors.py 1abc.pdb"
+
+'''
 import os
 import sys
 import textwrap
@@ -10,7 +17,7 @@ from chimerax.markers import MarkerSet
 from chimerax.struct_measure.tool import StructMeasureTool
 from chimerax.label import label_create
 
-sys.path.append(Path(__file__).parent.parent.parent.as_posix())
+sys.path.append(Path(__file__).parent.parent.as_posix())
 
 from src.metrics import Builder  # noqa
 
@@ -168,6 +175,6 @@ def main(proteinfile):
     labels(session, proteinfile)
 
 parser = argparse.ArgumentParser()
-parser.add_argument("proteinfile", help="pass filename to script")
+parser.add_argument("proteinfile", help="A protein structure in pdb format.")
 args = parser.parse_args()
 main(args.proteinfile)
