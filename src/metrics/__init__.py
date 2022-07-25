@@ -1,1 +1,1 @@
-from .metrics import Builder
+from .metrics import Builder, ModRes, ModStructure
