@@ -8,6 +8,7 @@ from Bio.PDB.StructureBuilder import StructureBuilder
 from Bio.SeqUtils.ProtParam import ProteinAnalysis
 from Bio.PDB.Residue import Residue
 from Bio.PDB.Polypeptide import three_to_one, standard_aa_names
+from Bio.PDB.PDBExceptions import PDBConstructionException
 
 GLYXGLY_ASA = {  # from Miller, Janin et al (1987)
     "A": 113,
@@ -308,13 +309,17 @@ class Builder(StructureBuilder):
                 for atom in residue:
                     if atom.get_bfactor() > 80:
                         position.append(atom.get_parent().id[1])
+            if len(position) == 0:
+                raise PDBConstructionException(
+                    "No atoms in this structure have a pLDDT (bfactor) scores above 80."
+                )
             removeresidues = []
             for residue in self.structure.get_residues():
                 if residue.id[1] < position[0]:
                     removeresidues.append(residue.id)
                 elif residue.id[1] > position[-1]:
                     removeresidues.append(residue.id)
-            print(removeresidues)
+            #print(removeresidues)
             for residueid in removeresidues:
                 #print(residueid)
                 self.chain.detach_child(residueid)
@@ -322,7 +327,7 @@ class Builder(StructureBuilder):
     
 if __name__ =='__main__':
     parser = PDBParser(QUIET=1, structure_builder=Builder(is_AF=True))
-    s = parser.get_structure("A0A133VM87", "data/archaeahalocyanin/A0A133VM87.pdb")    
+    s = parser.get_structure("A0A133UCB8", "data/archaeahalocyanin/A0A133UCB8.pdb")    
     s.measure()
     com = s.center_of_mass()
     dpv = s.dipolevector()
