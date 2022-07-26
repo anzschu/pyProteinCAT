@@ -27,6 +27,10 @@ from src.metrics import Builder  # noqa
 def labels(session, proteinfile):
     '''
     Creates labels for hydrophobic vector, dipole vector and protein name.
+    :param session: Global variable pointing to program instance, known to Chimera environment.
+    :param proteinfile: File path to PDB file.
+    :type proteinfile: Path
+    :return: Labels in Chimera.
     '''
     label_create(
         session,
@@ -59,6 +63,10 @@ def labels(session, proteinfile):
 def drawArc(session, proteinfile):
     '''
     Draws arc between both vectors.
+    :param session: Global variable pointing to program instance, known to Chimera environment.
+    :param proteinfile: File path to PDB file.
+    :type proteinfile: Path
+    :return: Arc between dipole and hydrophobic vectors drawn in Chimera X. 
     '''
     com, dpv, hpv = createcoordinates(proteinfile)
     dx, dy, dz = com + dpv / np.linalg.norm(dpv) * 10
@@ -83,6 +91,10 @@ def angles(session, proteinfile: Path):
     Defines markers for the center of mass and the tip of the hydrophobic and
     dipole vector. Calculates the angle between the both vectors. Based on:
     https://rbvi.github.io/chimerax-recipes/mark_blobs/mark_blobs.html
+    :param session: Global variable pointing to program instance, known to Chimera environment.
+    :param proteinfile: File path to PDB file.
+    :type proteinfile: Path
+    :return: Angle between dipole and hydrophobic vectors.
     '''
     c, d, h = createcoordinates(proteinfile)
     marker_set = MarkerSet(session, name="markersforangle")
@@ -98,6 +110,10 @@ def angles(session, proteinfile: Path):
 def drawVectors(session, *vectorfiles):
     """
     Consume as many files as fed.
+    :param session: Global variable pointing to program instance, known to Chimera environment.
+    :param vectorfile: File to create vector in Chimera X.
+    :type vectorfile: str
+    :return: Dipole and hydrophobic vectors in Chimera with respect to protein structure. 
     """
     for vfile in vectorfiles:
         run(session, f"open {vfile}")
@@ -108,6 +124,10 @@ def drawVectors(session, *vectorfiles):
 def drawProtein(session, proteinfile: Path):
     '''
     Displays protein structure in ChimeraX session.
+    :param session: Global variable pointing to program instance, known to Chimera environment.
+    :param proteinfile: File path to PDB file.
+    :type proteinfile: Path
+    :return: Protein structure in Chimera X. 
     '''
     run(session, f"open {proteinfile}")
 
@@ -115,6 +135,10 @@ def drawProtein(session, proteinfile: Path):
 def generateVectorFile(proteinfile: Path):
     '''
     Creates vector files for dipole and hydrophobic vector.
+    :param proteinfile: File path to PDB file.
+    :type proteinfile: Path
+    :return: Vectorfiles for dipole and hydrophobic vector.
+    :rtype: str
     '''
     com, dpv, hpv = createcoordinates(proteinfile)
     cx, cy, cz = com
@@ -146,6 +170,10 @@ def createcoordinates(proteinfile: Path):
     '''
     Creates coordinates for the center of mass, the dipole vector and th
     hydrophobic vector.
+    :param proteinfile: File path to PDB file.
+    :type proteinfile: Path
+    :return: Coordinates of the center of mass, dipole vector and hydrophobic vector
+    :rtype: tuple
     '''
     structure = generateStructure(proteinfile)
     c = structure.center_of_mass()
@@ -157,6 +185,10 @@ def createcoordinates(proteinfile: Path):
 def generateStructure(proteinfile: Path):
     '''
     Creates protein structure from Builder from metrics module.
+    :param proteinfile: File path to PDB file.
+    :type proteinfile: Path
+    :return: Protein structure
+    :rtype: ?
     '''
     parser = PDBParser(QUIET=True, structure_builder=Builder())
     structure = parser.get_structure(proteinfile.stem, proteinfile)
@@ -169,6 +201,10 @@ def main(proteinfile: str):
     Reads protein file to create structure.
     Visualizes protein structure, dipole vector and hydrophobic vector in
     Chimera X.
+    :param proteinfile: PDB File
+    :type proteinfile: str
+    :return: Visualisation of the protein structure, dipole vector and hydrophobic vector in Chimera X.
+    :rtype: Chimera X session
     '''
     proteinfile = Path(proteinfile)
     drawProtein(session, proteinfile)
