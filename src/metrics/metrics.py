@@ -66,6 +66,10 @@ class ModStructure(Structure):
         Structure.__init__(self, id)
 
     def measure(self):
+        '''
+        Assigns measurement to an attribute.
+        :param self: Structure entity
+        '''
         self.sequence = self.sequencer()
         self.length = self.getlength()
         self.MWkDa = self.molecularweight() / 1000
@@ -83,6 +87,9 @@ class ModStructure(Structure):
         """
         Returns a dictionary representing the structure's physicochemical
         properties.
+        :param self: Structure entity
+        :return: Dictionary of attributes
+        :rtype: dict
         """
         measurements = {
             'id': self.id,
@@ -103,6 +110,9 @@ class ModStructure(Structure):
     def sequencer(self):
         '''
         Return polypeptide sequence from peptides.
+        :param self: Structure entity
+        :return: Amino acid sequence in one letter code
+        :rtype: str
         '''
         sequence = ""
         for residue in self.get_residues():
@@ -112,18 +122,27 @@ class ModStructure(Structure):
     def getlength(self):
         '''
         Return length of the protein sequence.
+        :param self: Structure entity
+        :return: Length of sequence
+        :rtype: int
         '''
         return len(self.sequence)
 
     def molecularweight(self):
         '''
         Return molecular weight of the protein sequence.
+        :param self: Structure entity
+        :return: Molecular weight
+        :rtype: int
         '''
         return ProteinAnalysis(str(self.sequence)).molecular_weight()
 
     def aminocount(self):
         '''
         Return the amount of positive, negative and hydrophobic residues.
+        :param self: Structure entity
+        :return: Amount of positive, negative and hydrophobic residues in protein.
+        :rtype: tuple
         '''
         aminopos = self.sequence.count('K') + self.sequence.count('R')
         aminoneg = self.sequence.count('D') + self.sequence.count('E')
@@ -135,6 +154,9 @@ class ModStructure(Structure):
         """
         Perform SASA calculation with ShrakeRupley algorithm for the individual
         chains (monomers). Attach results to residue objects as Residue.monosasa.
+        :param self: Structure entity
+        :return: Solvent accessible surface area (SASA)
+        :rtype: int
         """
         calculator = ShrakeRupley()
         for chain in self.get_chains():
@@ -147,6 +169,9 @@ class ModStructure(Structure):
     def netcharge(self):
         '''
         Return the net charge of the protein from the amount of positive and negative amino acids.
+        :param self: Structure entity
+        :return: Net charge
+        :rtype: int
         '''
         return self.aminocount()[0] - self.aminocount()[1]
 
@@ -154,6 +179,9 @@ class ModStructure(Structure):
         '''
         Return net charge density from net charge and total SASA of the
         residues.
+        :param self: Structure entity
+        :return: Net charge density
+        :rtype: int
         '''
         netchargedensity = self.netcharge() / self.sasa
         return netchargedensity
@@ -162,6 +190,9 @@ class ModStructure(Structure):
         '''
         Return dipole moment calculated from the dipole moments of the positive and negative residues.
         Source for dipolemoment equation: Felder, Prilusky, Silman, Sussman Nucleic Acids Research 2007
+        :param self: Structure entity
+        :return: Dipole vector
+        :rtype: tuple
         '''
         dipolpos = sum(
             residue.center_of_mass()
@@ -175,12 +206,21 @@ class ModStructure(Structure):
         return dipolpos - dipolneg
 
     def dipolemoment(self):
+        '''
+        Calculation of the dipole moment from the dipole vector.
+        :param self: Structure entity
+        :return: Dipole moment
+        :rtype: int
+        '''
         return 4.803 * np.linalg.norm(self.dipolevector())
 
     def truehydrophobicity(self):
         '''
         Calculate total hydrophobicity for residues that are more than 25%
         exposed to the surface.
+        :param self: Structure entity
+        :return: Hydrophobicity for exposed amino acids
+        :rtype: int
         '''
         truehydrophobicity = 0
         for residue in self.get_residues():
@@ -193,6 +233,9 @@ class ModStructure(Structure):
     def hydrophobicvector(self):
         '''
         Calculate first order hydrophobic moment vector.
+        :param self: Structure entity
+        :return: Hydrophobic vector
+        :rtype: tuple
         '''
         hydrophobicvector = 0
         for residue in self.get_residues():
@@ -206,6 +249,9 @@ class ModStructure(Structure):
         '''
         Calculate first order hydrophobic moment.
         Source for hydrophobicmoment equation: Silverman PNAS 2001, eq. 13
+        :param self: Structure entity
+        :return: Hydrophobic momemnt
+        :rtype: int
         '''
         return np.linalg.norm(self.hydrophobicvector())
 
@@ -213,6 +259,7 @@ class ModStructure(Structure):
     def anglemeasurement(cls, v, u):
         '''
         Calculate angle between any two vectors v and u, in degrees.
+        
         '''
         return np.degrees(np.arccos(
             (np.dot(v, u))/
