@@ -138,7 +138,10 @@ coordinates.</p>
 <dl class="method">
 <dt id="src.metrics.metrics.ModStructure.aminocount">
 <code class="sig-name descname">aminocount</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.metrics.metrics.ModStructure.aminocount" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the amount of positive, negative and hydrophobic residues.</p>
+<dd><p>Return the amount of positive, negative and hydrophobic residues.
+:param self: Structure entity
+:return: Amount of positive, negative and hydrophobic residues in protein.
+:rtype: tuple</p>
 </dd></dl>
 
 <dl class="method">
@@ -151,82 +154,121 @@ coordinates.</p>
 <dt id="src.metrics.metrics.ModStructure.calculate_sasa">
 <code class="sig-name descname">calculate_sasa</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.metrics.metrics.ModStructure.calculate_sasa" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform SASA calculation with ShrakeRupley algorithm for the individual
-chains (monomers). Attach results to residue objects as Residue.monosasa.</p>
+chains (monomers). Attach results to residue objects as Residue.monosasa.
+:param self: Structure entity
+:return: Solvent accessible surface area (SASA)
+:rtype: int</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="src.metrics.metrics.ModStructure.dipolemoment">
 <code class="sig-name descname">dipolemoment</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.metrics.metrics.ModStructure.dipolemoment" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Calculation of the dipole moment from the dipole vector.
+:param self: Structure entity
+:return: Dipole moment
+:rtype: int</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="src.metrics.metrics.ModStructure.dipolevector">
 <code class="sig-name descname">dipolevector</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.metrics.metrics.ModStructure.dipolevector" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return dipole moment calculated from the dipole moments of the positive and negative residues.
-Source for dipolemoment equation: Felder, Prilusky, Silman, Sussman Nucleic Acids Research 2007</p>
+Source for dipolemoment equation: Felder, Prilusky, Silman, Sussman Nucleic Acids Research 2007
+:param self: Structure entity
+:return: Dipole vector
+:rtype: tuple</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="src.metrics.metrics.ModStructure.getlength">
 <code class="sig-name descname">getlength</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.metrics.metrics.ModStructure.getlength" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return length of the protein sequence.</p>
+<dd><p>Return length of the protein sequence.
+:param self: Structure entity
+:return: Length of sequence
+:rtype: int</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="src.metrics.metrics.ModStructure.hydrophobicmoment">
 <code class="sig-name descname">hydrophobicmoment</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.metrics.metrics.ModStructure.hydrophobicmoment" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate first order hydrophobic moment.
-Source for hydrophobicmoment equation: Silverman PNAS 2001, eq. 13</p>
+Source for hydrophobicmoment equation: Silverman PNAS 2001, eq. 13
+:param self: Structure entity
+:return: Hydrophobic momemnt
+:rtype: int</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="src.metrics.metrics.ModStructure.hydrophobicvector">
 <code class="sig-name descname">hydrophobicvector</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.metrics.metrics.ModStructure.hydrophobicvector" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate first order hydrophobic moment vector.</p>
+<dd><p>Calculate first order hydrophobic moment vector.
+:param self: Structure entity
+:return: Hydrophobic vector
+:rtype: tuple</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="src.metrics.metrics.ModStructure.measure">
 <code class="sig-name descname">measure</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.metrics.metrics.ModStructure.measure" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Assigns measurement to an attribute.
+:param self: Structure entity</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="src.metrics.metrics.ModStructure.molecularweight">
 <code class="sig-name descname">molecularweight</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.metrics.metrics.ModStructure.molecularweight" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return molecular weight of the protein sequence.</p>
+<dd><p>Return molecular weight of the protein sequence.
+:param self: Structure entity
+:return: Molecular weight
+:rtype: int</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="src.metrics.metrics.ModStructure.netcharge">
 <code class="sig-name descname">netcharge</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.metrics.metrics.ModStructure.netcharge" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the net charge of the protein from the amount of positive and negative amino acids.</p>
+<dd><p>Return the net charge of the protein from the amount of positive and negative amino acids.
+:param self: Structure entity
+:return: Net charge
+:rtype: int</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="src.metrics.metrics.ModStructure.netchargedensity">
 <code class="sig-name descname">netchargedensity</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.metrics.metrics.ModStructure.netchargedensity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return net charge density from net charge and total SASA of the
-residues.</p>
+residues.
+:param self: Structure entity
+:return: Net charge density
+:rtype: int</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="src.metrics.metrics.ModStructure.sequencer">
 <code class="sig-name descname">sequencer</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.metrics.metrics.ModStructure.sequencer" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return polypeptide sequence from peptides.</p>
+<dd><p>Return polypeptide sequence from peptides.
+:param self: Structure entity
+:return: Amino acid sequence in one letter code
+:rtype: str</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="src.metrics.metrics.ModStructure.serializer">
 <code class="sig-name descname">serializer</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.metrics.metrics.ModStructure.serializer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a dictionary representing the structure’s physicochemical
-properties.</p>
+properties.
+:param self: Structure entity
+:return: Dictionary of attributes
+:rtype: dict</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="src.metrics.metrics.ModStructure.truehydrophobicity">
 <code class="sig-name descname">truehydrophobicity</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.metrics.metrics.ModStructure.truehydrophobicity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate total hydrophobicity for residues that are more than 25%
-exposed to the surface.</p>
+exposed to the surface.
+:param self: Structure entity
+:return: Hydrophobicity for exposed amino acids
+:rtype: int</p>
 </dd></dl>
 
 </dd></dl>
