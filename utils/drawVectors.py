@@ -30,7 +30,6 @@ def labels(session, proteinfile):
     :param session: Global variable pointing to program instance, known to Chimera environment.
     :param proteinfile: File path to PDB file.
     :type proteinfile: Path
-    :return: Labels in Chimera.
     '''
     label_create(
         session,
@@ -66,7 +65,6 @@ def drawArc(session, proteinfile):
     :param session: Global variable pointing to program instance, known to Chimera environment.
     :param proteinfile: File path to PDB file.
     :type proteinfile: Path
-    :return: Arc between dipole and hydrophobic vectors drawn in Chimera X. 
     '''
     com, dpv, hpv = createcoordinates(proteinfile)
     dx, dy, dz = com + dpv / np.linalg.norm(dpv) * 10
@@ -94,7 +92,6 @@ def angles(session, proteinfile: Path):
     :param session: Global variable pointing to program instance, known to Chimera environment.
     :param proteinfile: File path to PDB file.
     :type proteinfile: Path
-    :return: Angle between dipole and hydrophobic vectors.
     '''
     c, d, h = createcoordinates(proteinfile)
     marker_set = MarkerSet(session, name="markersforangle")
@@ -113,7 +110,6 @@ def drawVectors(session, *vectorfiles):
     :param session: Global variable pointing to program instance, known to Chimera environment.
     :param vectorfile: File to create vector in Chimera X.
     :type vectorfile: str
-    :return: Dipole and hydrophobic vectors in Chimera with respect to protein structure. 
     """
     for vfile in vectorfiles:
         run(session, f"open {vfile}")
@@ -127,7 +123,6 @@ def drawProtein(session, proteinfile: Path):
     :param session: Global variable pointing to program instance, known to Chimera environment.
     :param proteinfile: File path to PDB file.
     :type proteinfile: Path
-    :return: Protein structure in Chimera X. 
     '''
     run(session, f"open {proteinfile}")
 
@@ -188,7 +183,6 @@ def generateStructure(proteinfile: Path):
     :param proteinfile: File path to PDB file.
     :type proteinfile: Path
     :return: Protein structure
-    :rtype: ?
     '''
     parser = PDBParser(QUIET=True, structure_builder=Builder())
     structure = parser.get_structure(proteinfile.stem, proteinfile)
@@ -203,8 +197,6 @@ def main(proteinfile: str):
     Chimera X.
     :param proteinfile: PDB File
     :type proteinfile: str
-    :return: Visualisation of the protein structure, dipole vector and hydrophobic vector in Chimera X.
-    :rtype: Chimera X session
     '''
     proteinfile = Path(proteinfile)
     drawProtein(session, proteinfile)
