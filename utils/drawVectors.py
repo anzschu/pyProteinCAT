@@ -157,7 +157,7 @@ def generateStructure(proteinfile: Path):
     '''
     Creates protein structure from Builder from metrics module.
     '''
-    parser = PDBParser(QUIET=True, structure_builder=Builder())
+    parser = PDBParser(QUIET=True, structure_builder=Builder(is_AF=True))
     structure = parser.get_structure(proteinfile.stem, proteinfile)
     structure.measure()
     return structure
