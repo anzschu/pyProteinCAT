@@ -12,7 +12,7 @@ from settings import DATA, TRIM
 from src.metrics.metrics import ModStructure
 
 
-dataset = DATA / 'bacteriahalocyanin'
+dataset = DATA / 'archaeahalocyanin'
 trimset = TRIM 
 
 def read_data(fname):
@@ -24,7 +24,7 @@ def save_pdb(fname):
     s = read_data(fname)
     io = PDBIO()
     io.set_structure(s)
-    with open(TRIM / f"{fname.stem}_trim2.pdb", mode='w') as f:
+    with open(TRIM / f"{fname.stem}_trim.pdb", mode='w') as f:
         io.save(f)
 
 def findingthreshold(fname):
@@ -45,12 +45,15 @@ def findingthreshold(fname):
     plt.savefig(TRIM/f"{fname.stem}2.png", bbox_inches='tight',dpi=200)
    
 if __name__ =='__main__':
-    firstten = 0
-    for data in dataset.iterdir():
-        firstten += 1
-        save_pdb(data)
-        findingthreshold(data)
-        if firstten == 10:
-            break
+    #firstten = 0
+    #for data in dataset.iterdir():
+    #    firstten += 1
+    #    save_pdb(data)
+    #    findingthreshold(data)
+    #    if firstten == 10:
+    #        break
     # s.measure()
+    data = dataset/'A0A0F7IFE1.pdb'
+    save_pdb(data)
+    findingthreshold(data)
 
