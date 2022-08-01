@@ -42,7 +42,7 @@ def findingthreshold(fname):
     plt.xlabel("Residue")
     plt.ylabel("pLDDT")
     plt.title(f"{fname.stem}")
-    plt.savefig(TRIM/f"{fname.stem}2.png", bbox_inches='tight',dpi=200)
+    plt.savefig(TRIM/f"{fname.stem}.png", bbox_inches='tight',dpi=200)
    
 if __name__ =='__main__':
     #firstten = 0
