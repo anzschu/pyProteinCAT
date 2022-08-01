@@ -1,6 +1,7 @@
 from os import remove
 import numpy as np
 from Bio.PDB import PDBParser
+from Bio.PDB.PDBIO import PDBIO
 from Bio.PDB.Polypeptide import is_aa
 from Bio.PDB.SASA import ShrakeRupley
 from Bio.PDB.Structure import Structure
@@ -9,6 +10,7 @@ from Bio.SeqUtils.ProtParam import ProteinAnalysis
 from Bio.PDB.Residue import Residue
 from Bio.PDB.Polypeptide import three_to_one, standard_aa_names
 from Bio.PDB.PDBExceptions import PDBConstructionException
+from settings import TRIM
 
 GLYXGLY_ASA = {  # from Miller, Janin et al (1987)
     "A": 113,
@@ -165,8 +167,8 @@ class ModStructure(Structure):
 
     def dipolevector(self):
         '''
-        Return dipole moment calculated from the dipole moments of the positive and negative residues.
-        Source for dipolemoment equation: Felder, Prilusky, Silman, Sussman Nucleic Acids Research 2007
+        Calculate dipole vector from the center of the sum of the positive amino acids and the center
+        of the sum of the negative amino acids.
         '''
         dipolpos = sum(
             residue.center_of_mass()
@@ -180,6 +182,10 @@ class ModStructure(Structure):
         return dipolpos - dipolneg
 
     def dipolemoment(self):
+        '''
+        Return dipole moment calculated from the dipole moments of the positive and negative residues.
+        Source for dipolemoment equation: Felder, Prilusky, Silman, Sussman Nucleic Acids Research 2007
+        '''
         return 4.803 * np.linalg.norm(self.dipolevector())
 
     def truehydrophobicity(self):
@@ -222,6 +228,15 @@ class ModStructure(Structure):
             (np.dot(v, u))/
             (np.linalg.norm(v)*np.linalg.norm(u))
         ))
+
+    def save_pdb(self, fname):
+        '''
+        Save structure as pdb file. Typically used together with trimming.
+        '''
+        io = PDBIO()
+        io.set_structure(self)
+        with open(TRIM/ f"{fname.stem}_trim.pdb", mode='w') as f:
+            io.save(f)
 
     def __str__(self):
         return f"ModStructure instance {self.id}"
@@ -307,7 +322,6 @@ class Builder(StructureBuilder):
         For AlphaFold structures containing floppy N and C terminal, residues are removed until the first 
         residue with a pLDDT (confidence) > 80.
         '''
-        
         if self.is_AF == True:
             position = []
             for residue in self.structure.get_residues():
@@ -328,14 +342,16 @@ class Builder(StructureBuilder):
             for residueid in removeresidues:
                 #print(residueid)
                 self.chain.detach_child(residueid)
+            
         return self.structure
     
 if __name__ =='__main__':
     parser = PDBParser(QUIET=1, structure_builder=Builder(is_AF=True))
     s = parser.get_structure("A0A133UCB8", "data/archaeahalocyanin/A0A133UCB8.pdb")    
-    s.measure()
-    com = s.center_of_mass()
-    dpv = s.dipolevector()
-    hpv = s.hydrophobicvector()
-    print(s.anglemeasurement(dpv - com, hpv - com))
-    print(s.serializer())
+    s.save_pdb()
+    # s.measure()
+    # com = s.center_of_mass()
+    # dpv = s.dipolevector()
+    # hpv = s.hydrophobicvector()
+    # print(s.anglemeasurement(dpv - com, hpv - com))
+    # print(s.serializer())
