@@ -303,6 +303,11 @@ class Builder(StructureBuilder):
         self.chain.add(self.residue)
     
     def get_structure(self):
+        '''
+        For AlphaFold structures containing floppy N and C terminal, residues are removed until the first 
+        residue with a pLDDT (confidence) > 80.
+        '''
+        
         if self.is_AF == True:
             position = []
             for residue in self.structure.get_residues():
