@@ -10,7 +10,6 @@ from Bio.SeqUtils.ProtParam import ProteinAnalysis
 from Bio.PDB.Residue import Residue
 from Bio.PDB.Polypeptide import three_to_one, standard_aa_names
 from Bio.PDB.PDBExceptions import PDBConstructionException
-from settings import TRIM
 
 GLYXGLY_ASA = {  # from Miller, Janin et al (1987)
     "A": 113,
@@ -229,13 +228,13 @@ class ModStructure(Structure):
             (np.linalg.norm(v)*np.linalg.norm(u))
         ))
 
-    def save_pdb(self, fname):
+    def save_pdb(self, outfname):
         '''
         Save structure as pdb file. Typically used together with trimming.
         '''
         io = PDBIO()
         io.set_structure(self)
-        with open(TRIM/ f"{fname.stem}_trim.pdb", mode='w') as f:
+        with open(outfname, mode='w') as f:
             io.save(f)
 
     def __str__(self):
