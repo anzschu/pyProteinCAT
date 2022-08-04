@@ -1,7 +1,7 @@
 Welcome to PDByardstick's documentation!
 ========================================
 
-**PDByardstick** is a Python library for protein scientist that helps you
+**PDByardstick** is a Python library for protein scientists that helps you
 measure some physicochemical properties on the atomic coordinates of a protein.
 
 .. important::
