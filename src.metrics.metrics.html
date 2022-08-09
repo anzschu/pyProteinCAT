@@ -76,7 +76,7 @@
 <span id="metrics-py"></span><h1>metrics.py<a class="headerlink" href="#module-src.metrics.metrics" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="src.metrics.metrics.Builder">
-<em class="property">class </em><code class="sig-prename descclassname">src.metrics.metrics.</code><code class="sig-name descname">Builder</code><a class="headerlink" href="#src.metrics.metrics.Builder" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">src.metrics.metrics.</code><code class="sig-name descname">Builder</code><span class="sig-paren">(</span><em class="sig-param">is_AF=False</em><span class="sig-paren">)</span><a class="headerlink" href="#src.metrics.metrics.Builder" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Bio.PDB.StructureBuilder.StructureBuilder</span></code></p>
 <p>Subclassing of Bio.PDB.StructureBuilder.StructureBuilder to
 incorporate metrics.ModRes and metrics.ModStructure into the
@@ -86,6 +86,13 @@ Pass a Builder instance to the PDBParser as a structure_builder parameter.</p>
 <p>Example:
 &gt;&gt;&gt; parser = PDBParser(QUIET=1, structure_builder=Builder())
 &gt;&gt;&gt; s = parser.get_structure(“code”, “1ris.pdb”)</p>
+<dl class="method">
+<dt id="src.metrics.metrics.Builder.get_structure">
+<code class="sig-name descname">get_structure</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.metrics.metrics.Builder.get_structure" title="Permalink to this definition">¶</a></dt>
+<dd><p>For AlphaFold structures containing floppy N and C terminal, residues are removed until the first 
+residue with a pLDDT (confidence) &gt; 80.</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="src.metrics.metrics.Builder.init_residue">
 <code class="sig-name descname">init_residue</code><span class="sig-paren">(</span><em class="sig-param">resname</em>, <em class="sig-param">field</em>, <em class="sig-param">resseq</em>, <em class="sig-param">icode</em><span class="sig-paren">)</span><a class="headerlink" href="#src.metrics.metrics.Builder.init_residue" title="Permalink to this definition">¶</a></dt>
@@ -196,7 +203,7 @@ chains (monomers). Attach results to residue objects as Residue.monosasa.</p>
 <dl class="method">
 <dt id="src.metrics.metrics.ModStructure.dipolevector">
 <code class="sig-name descname">dipolevector</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.metrics.metrics.ModStructure.dipolevector" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return dipole moment calculated from the dipole moments of the positive and negative residues.
+<dd><p>Return dipole moment calculated from the position of the positive and negative residues.
 Source for dipolemoment equation: Felder, Prilusky, Silman, Sussman Nucleic Acids Research 2007</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -324,6 +331,12 @@ residues.</p>
 <dd class="field-odd"><p>int</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="src.metrics.metrics.ModStructure.save_pdb">
+<code class="sig-name descname">save_pdb</code><span class="sig-paren">(</span><em class="sig-param">outfname</em><span class="sig-paren">)</span><a class="headerlink" href="#src.metrics.metrics.ModStructure.save_pdb" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save structure as pdb file. Typically used together with trimming.</p>
 </dd></dl>
 
 <dl class="method">
