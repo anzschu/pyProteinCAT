@@ -1,8 +1,10 @@
-Welcome to PDByardstick's documentation!
+Welcome to pyProteinCAT's documentation!
 ========================================
 
-**PDByardstick** is a Python library for protein scientist that helps you
+**pyProteinCAT** is a Python library for protein scientist that helps you
 measure some physicochemical properties on the atomic coordinates of a protein.
+pyProteinCAT entails tools for property **c**alculations and **a**nalysis. Depending on
+the user and the confidence of structure prediction, the **t**rimming tool can be used.
 
 .. important::
 
