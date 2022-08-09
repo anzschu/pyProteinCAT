@@ -84,6 +84,7 @@ class ModStructure(Structure):
         self.dpm = self.dipolemoment()
         self.guy = self.truehydrophobicity()
         self.hpm = self.hydrophobicmoment()
+        self.angle = self.anglemeasurement(self.dipolevector(),self.hydrophobicvector())
 
     def serializer(self):
         """
@@ -102,7 +103,8 @@ class ModStructure(Structure):
             'ncd': self.ncd,
             'dpm': self.dpm,
             'guy': self.guy,
-            'hpm': self.hpm
+            'hpm': self.hpm,
+            'angle': self.angle
         }
         return measurements
 
@@ -346,9 +348,10 @@ class Builder(StructureBuilder):
     
 if __name__ =='__main__':
     parser = PDBParser(QUIET=1, structure_builder=Builder(is_AF=True))
-    s = parser.get_structure("A0A133UCB8", "data/archaeahalocyanin/A0A133UCB8.pdb")    
-    s.save_pdb()
-    # s.measure()
+    s = parser.get_structure("P39442", "data/AF-P39442-F1-model_v3.pdb")    
+    s.save_pdb("data/P39442.pdb")
+    s.measure()
+    print(s.serializer())
     # com = s.center_of_mass()
     # dpv = s.dipolevector()
     # hpv = s.hydrophobicvector()
