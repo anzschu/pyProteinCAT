@@ -7,49 +7,82 @@ import seaborn as sns
 
 from settings import MEASUREMENTS, TAXONOMY, ANALYSIS
 
-# %%codecell paths
-measurementset = MEASUREMENTS / 'bacteriahalocyanin.csv'
-taxonomyset = TAXONOMY / 'halocyanin_bacteria.csv'
-analysisfolder = ANALYSIS/'bacteriahalocyanin'
+# %%codecell paths archaea
+measurementseta = MEASUREMENTS / 'archaeahalocyanintrim.csv'
+taxonomyseta = TAXONOMY / 'halocyanin_archaea.csv'
+analysisfoldera = ANALYSIS/'archaeahalocyanin'
 
-# %%codecell Read csv files and merge
-properties = pd.read_csv(measurementset)
-taxi = pd.read_csv(taxonomyset)
-pt = properties.merge(taxi, on='id')
+# %%codecell paths bacteria
+measurementsetb = MEASUREMENTS / 'bacteriahalocyanintrim.csv'
+taxonomysetb = TAXONOMY / 'halocyanin_bacteria.csv'
+analysisfolderb = ANALYSIS/'bacteriahalocyanin'
+
+analysisfolderab = ANALYSIS/'archaeabacteria'
+# %%codecell Read csv files and merge for archaea
+propertiesa = pd.read_csv(measurementseta)
+taxia = pd.read_csv(taxonomyseta)
+pta = propertiesa.merge(taxia, on='id')
+
+# %%code cell Read csv files and merge for bacteria
+propertiesb = pd.read_csv(measurementsetb)
+taxib = pd.read_csv(taxonomysetb)
+ptb = propertiesb.merge(taxib, on= 'id')
 
 # %%codecell specify amount of subgroups to view
-topfourphyla = pt.value_counts(subset='phylum').index[:4]
-toptenclass = pt.value_counts(subset= 'class').index[:10]
+topfourphylaa = pta.value_counts(subset='phylum').index[:4]
+topfourclassa = pta.value_counts(subset= 'class').index[:4]
+topfourordera = ptb.value_counts(subset='order').index[:4]
 
-# %%code cell plot all possible plots
+topfourphylab = ptb.value_counts(subset='phylum').index[:4]
+topfourclassb = ptb.value_counts(subset= 'class').index[:4]
+topfourorderb = ptb.value_counts(subset='order').index[:4]
 
-for x in pt.columns[1:12]:
-    for y in pt.columns[1:12]:
-        sns.relplot(x= f"{x}", y= f"{y}", hue ='phylum', data = pt[pt.phylum.isin(topfourphyla)])
+
+# %%code Plot all possible plots
+
+for x in pta.columns[1:12]:
+    for y in pta.columns[1:12]:
+        sns.relplot(x= f"{x}", y= f"{y}", hue ='kingdom', data = ptb)
         plt.show()
         #plt.savefig(analysisfolder/f"{xname}{yname}.png",bbox_inches='tight',dpi=200)
 
-# %%codecell plot one specific plot
+# %%code cell Plot both bacteria and archaea in one plot, all plots
 
-sns.relplot(x= 'length', y= 'fNeg', hue ='phylum', data = pt[pt.phylum.isin(topfourphyla)])
-plt.show()
-# %%codecell plot all plots in one plot
-listofcols = ['mwkda', 'fPos', 'fNeg', 'fFatty', 'ncd', 'dpm', 'guy', 'hpm']
-sns.pairplot( hue ='phylum', data = pt[pt.phylum.isin(topfourphyla)], vars = listofcols)
-plt.show()
+d1 = pta
+#[pta['phylum'].isin(topfourphylaa)]
+d2 = ptb
+#[ptb['phylum'].isin(topfourphylab)]
+frames = [d1, d2]
+da = pd.concat(frames).reset_index(drop=True)
 
-# %%codecell plot all plots as kdeplots
-
-for xi in pt.columns[1:12]:
-    for yi in pt.columns [1:12]:
+for xi in da.columns[1:12]:
+    for yi in da.columns [1:12]:
         if not xi == yi:
-            sns.kdeplot(
-                x= xi,
-                y= yi,
-                hue = 'class', 
-                data = pt[pt['class'].isin(toptenclass)],
-                legend = False
-            )
+            sns.relplot(
+                x = xi,
+                y = yi,
+                hue = 'kingdom',
+                data = da,
+                palette = 'coolwarm'
+                )
             plt.show()
-            
-# %%
+
+# %% Plot archaea and bacteria in one plot, plots only one plot
+d1 = pta[pta['class'].isin(topfourclassa)]
+#['phylum'].isin(topfourphylaa)
+d2 = ptb[ptb['class'].isin(topfourclassb)]
+#['phylum'].isin(topfourphylab)
+frames = [d1, d2]
+da = pd.concat(frames).reset_index(drop=True)
+da['ncd1000'] = da.ncd * 1000
+da['fc'] = da.fPos + da.fNeg
+#print(da)
+
+sns.relplot(
+    x = 'ncd',
+    y = 'mwkda',
+    hue = 'kingdom',
+    data = da,
+    palette = 'coolwarm_r',
+    )
+#plt.savefig(analysisfolderab/'ncdmwkdaphylumrelplot.png', bbox_inches='tight',dpi=200)
