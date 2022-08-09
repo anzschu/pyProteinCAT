@@ -7,3 +7,8 @@ env/
 ex0/
 docs/build
 texts/
+analysis/archaeabacteria/
+analysis/archaeahalocyanin/
+analysis/bacteriahalocyanin/
+measurements/
+trim/
