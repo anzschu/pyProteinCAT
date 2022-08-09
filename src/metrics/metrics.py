@@ -1,5 +1,7 @@
+from os import remove
 import numpy as np
 from Bio.PDB import PDBParser
+from Bio.PDB.PDBIO import PDBIO
 from Bio.PDB.Polypeptide import is_aa
 from Bio.PDB.SASA import ShrakeRupley
 from Bio.PDB.Structure import Structure
@@ -7,6 +9,7 @@ from Bio.PDB.StructureBuilder import StructureBuilder
 from Bio.SeqUtils.ProtParam import ProteinAnalysis
 from Bio.PDB.Residue import Residue
 from Bio.PDB.Polypeptide import three_to_one, standard_aa_names
+from Bio.PDB.PDBExceptions import PDBConstructionException
 
 GLYXGLY_ASA = {  # from Miller, Janin et al (1987)
     "A": 113,
@@ -84,6 +87,7 @@ class ModStructure(Structure):
         self.dpm = self.dipolemoment()
         self.guy = self.truehydrophobicity()
         self.hpm = self.hydrophobicmoment()
+        self.angle = self.anglemeasurement(self.dipolevector(),self.hydrophobicvector())
 
     def serializer(self):
         """
@@ -107,7 +111,8 @@ class ModStructure(Structure):
             'ncd': self.ncd,
             'dpm': self.dpm,
             'guy': self.guy,
-            'hpm': self.hpm
+            'hpm': self.hpm,
+            'angle': self.angle
         }
         return measurements
 
@@ -206,7 +211,7 @@ class ModStructure(Structure):
 
     def dipolevector(self):
         '''
-        Return dipole moment calculated from the dipole moments of the positive and negative residues.
+        Return dipole moment calculated from the position of the positive and negative residues.
         Source for dipolemoment equation: Felder, Prilusky, Silman, Sussman Nucleic Acids Research 2007
 
         :param self: Structure entity
@@ -248,12 +253,10 @@ class ModStructure(Structure):
         '''
         truehydrophobicity = 0
         for residue in self.get_residues():
-            # if residue.get_resname() in GLYXGLY_ASA:
-            sasaratio = residue.sasa / GLYXGLY_ASA[residue.resletter]
-            if sasaratio > 0.25:
-                truehydrophobicity += hydrophobicityscale[residue.resletter]
-        return truehydrophobicity
-
+            if not residue.is_buried():
+                truehydrophobicity += hydrophobicityscale[residue.resletter] * residue.sasa
+        return truehydrophobicity/self.sasa
+    
     def hydrophobicvector(self):
         '''
         Calculate first order hydrophobic moment vector.
@@ -265,10 +268,11 @@ class ModStructure(Structure):
         '''
         hydrophobicvector = 0
         for residue in self.get_residues():
-            #if residue.get_resname() in GLYXGLY_ASA:
             hydrophobicvector += (
                 hydrophobicityscale[residue.resletter] * residue.sasa * (
-                      residue.center_of_mass() - self.center_of_mass()))
+                    residue.center_of_mass() - self.center_of_mass()
+                )
+            )
         return hydrophobicvector
         
     def hydrophobicmoment(self):
@@ -293,6 +297,15 @@ class ModStructure(Structure):
             (np.dot(v, u))/
             (np.linalg.norm(v)*np.linalg.norm(u))
         ))
+
+    def save_pdb(self, outfname):
+        '''
+        Save structure as pdb file. Typically used together with trimming.
+        '''
+        io = PDBIO()
+        io.set_structure(self)
+        with open(outfname, mode='w') as f:
+            io.save(f)
 
     def __str__(self):
         return f"ModStructure instance {self.id}"
@@ -347,6 +360,9 @@ class Builder(StructureBuilder):
     >>> parser = PDBParser(QUIET=1, structure_builder=Builder())
     >>> s = parser.get_structure("code", "1ris.pdb")
     """
+    def __init__(self, is_AF = False):
+        self.is_AF = is_AF
+        StructureBuilder.__init__(self)
 
     def init_structure(self, structure_id):
         """
@@ -367,20 +383,40 @@ class Builder(StructureBuilder):
                 field = "H_" + resname
 
         residue_id = (field, resseq, icode)
-        self.residue = ModRes(
-            residue_id,
-            resname,
-            self.segid)  # ---> bespoke class
+        self.residue = ModRes(residue_id, resname, self.segid)  # ---> bespoke class
         self.chain.add(self.residue)
-
-
-if __name__ == '__main__':
-    parser = PDBParser(QUIET=1, structure_builder=Builder())
-    s = parser.get_structure("1ris", "data/data1/1ris.pdb")
-    # s.calculate_sasa()
+    
+    def get_structure(self):
+        '''
+        For AlphaFold structures containing floppy N and C terminal, residues are removed until the first 
+        residue with a pLDDT (confidence) > 80.
+        '''
+        if self.is_AF == True:
+            position = []
+            for residue in self.structure.get_residues():
+                for atom in residue:
+                    if atom.get_bfactor() > 80:
+                        position.append(atom.get_parent().id[1])
+            if len(position) == 0:
+                raise PDBConstructionException(
+                    "No atoms in this structure have a pLDDT (bfactor) scores above 80."
+                )
+            removeresidues = []
+            for residue in self.structure.get_residues():
+                if residue.id[1] < position[0]:
+                    removeresidues.append(residue.id)
+                elif residue.id[1] > position[-1]:
+                    removeresidues.append(residue.id)
+            #print(removeresidues)
+            for residueid in removeresidues:
+                #print(residueid)
+                self.chain.detach_child(residueid)
+            
+        return self.structure
+    
+if __name__ =='__main__':
+    parser = PDBParser(QUIET=1, structure_builder=Builder(is_AF=True))
+    s = parser.get_structure("P39442", "data/AF-P39442-F1-model_v3.pdb")    
+    s.save_pdb("data/P39442.pdb")
     s.measure()
-    com = s.center_of_mass()
-    dpv = s.dipolevector()
-    hpv = s.hydrophobicvector()
-    print(s.anglemeasurement(dpv - com, hpv - com))
     print(s.serializer())

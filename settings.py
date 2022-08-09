@@ -1,3 +1,11 @@
 from pathlib import Path
 
-DATASETS = Path("data")
+DATA = Path('data/')
+
+MEASUREMENTS = Path('measurements/')
+
+TAXONOMY = Path ('taxonomy/')
+
+TRIM = Path('trim/')
+
+ANALYSIS = Path('analysis/')
