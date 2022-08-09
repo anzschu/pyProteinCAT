@@ -9,29 +9,29 @@ from Bio.PDB.Residue import Residue
 from Bio.PDB.Polypeptide import three_to_one, standard_aa_names
 
 GLYXGLY_ASA = {  # from Miller, Janin et al (1987)
-    "A": 113,
-    "R": 241,
-    "N": 158,
-    "D": 151,
-    "C": 140,
-    "Q": 189,
-    "E": 183,
-    "G": 85,
-    "H": 194,
-    "I": 182,
-    "L": 180,
-    "K": 211,
-    "M": 204,
-    "F": 218,
-    "P": 143,
-    "S": 122,
-    "T": 146,
-    "W": 259,
-    "Y": 229,
-    "V": 160,
+    'A': 113,
+    'R': 241,
+    'N': 158,
+    'D': 151,
+    'C': 140,
+    'Q': 189,
+    'E': 183,
+    'G': 85,
+    'H': 194,
+    'I': 182,
+    'L': 180,
+    'K': 211,
+    'M': 204,
+    'F': 218,
+    'P': 143,
+    'S': 122,
+    'T': 146,
+    'W': 259,
+    'Y': 229,
+    'V': 160,
 }
 
-hydrophobicityscale = {  # from Guy, H.R., Biophys J. 47:61-70(1985)
+hydrophobicityscale = {  # from Guy, H.R., Biophys J. 47:61-70(1985), table 4
     'A': 0.100,
     'R': 1.910,
     'N': 0.480,
@@ -64,6 +64,7 @@ class ModStructure(Structure):
 
     def __init__(self, id):
         Structure.__init__(self, id)
+        self.hydrophobicityscale = hydrophobicityscale
 
     def measure(self):
         '''
@@ -227,7 +228,7 @@ class ModStructure(Structure):
 
     def dipolemoment(self):
         '''
-        Calculation of the dipole moment from the dipole vector.
+        Calculation of the dipole moment in Debye from the dipole vector.
 
         :param self: Structure entity
         :return: Dipole moment
@@ -235,6 +236,14 @@ class ModStructure(Structure):
 
         '''
         return 4.803 * np.linalg.norm(self.dipolevector())
+
+    def sethydrophobicityscale(self, scale):
+        '''
+        Customize values of hydrophobicity scale.
+        :param scale: dictionary: {residue: energy required to transfer residue from surface of protein to its interior}
+        :rtype: None
+        '''
+        self.hydrophobicityscale = scale
 
     def truehydrophobicity(self):
         '''
@@ -251,7 +260,7 @@ class ModStructure(Structure):
             # if residue.get_resname() in GLYXGLY_ASA:
             sasaratio = residue.sasa / GLYXGLY_ASA[residue.resletter]
             if sasaratio > 0.25:
-                truehydrophobicity += hydrophobicityscale[residue.resletter]
+                truehydrophobicity += self.hydrophobicityscale[residue.resletter]
         return truehydrophobicity
 
     def hydrophobicvector(self):
@@ -267,7 +276,7 @@ class ModStructure(Structure):
         for residue in self.get_residues():
             #if residue.get_resname() in GLYXGLY_ASA:
             hydrophobicvector += (
-                hydrophobicityscale[residue.resletter] * residue.sasa * (
+                self.hydrophobicityscale[residue.resletter] * residue.sasa * (
                       residue.center_of_mass() - self.center_of_mass()))
         return hydrophobicvector
         
@@ -378,6 +387,7 @@ if __name__ == '__main__':
     parser = PDBParser(QUIET=1, structure_builder=Builder())
     s = parser.get_structure("1ris", "data/data1/1ris.pdb")
     # s.calculate_sasa()
+    s.sethydrophobicityscale({k: np.random.rand() for k in hydrophobicityscale})
     s.measure()
     com = s.center_of_mass()
     dpv = s.dipolevector()
