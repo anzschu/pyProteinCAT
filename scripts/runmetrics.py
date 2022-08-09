@@ -8,8 +8,8 @@ from src.metrics import Builder
 from settings import DATA, MEASUREMENTS
 
 
-dataset = DATA / 'archaeahalocyanin'
-measurementset = MEASUREMENTS / 'archaeahalocyanintrim.csv'
+dataset = DATA / 'bacteriahalocyanin'
+measurementset = MEASUREMENTS / 'bacteriahalocyanintrim.csv'
 
 def read_data(fname):
     parser = PDBParser(QUIET=1, structure_builder=Builder(is_AF=True))
