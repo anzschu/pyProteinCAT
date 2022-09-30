@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.abspath('../..'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'PDByardstick'
+project = 'pyProteinCAT'
 copyright = '2022, Anna Schuppe and Eloy Vallina'
 author = 'Anna Schuppe and Eloy Vallina'
 
