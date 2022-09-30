@@ -2,7 +2,7 @@
 
 # Summer Project
 
-Documentation in: https://anzschu.github.io/summerproject/
+Documentation in: https://anzschu.github.io/pyProteinCAT/
 
 
 # src/graphics
